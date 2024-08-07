@@ -2,6 +2,8 @@
 
 namespace Database\Seeders;
 
+use App\Models\Sale;
+use App\Models\Product;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -13,6 +15,19 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
-        // \App\Models\User::factory(10)->create();
+
+        $this->call(DenominationSeeder::class);
+        $this->call(CategorySeeder::class);
+        $this->call(ProductSeeder::class);
+        $this->call(UserSeeder::class);
+
+        Sale::factory(1000)->create()->each(function ($sale) {
+            $sale->details()->create([
+                'sale_id' => $sale->id,
+                'product_id' => Product::all()->random()->id,
+                'quantity' => $sale->items,
+                'price' => $sale->total / $sale->items
+            ]);
+        });
     }
 }
