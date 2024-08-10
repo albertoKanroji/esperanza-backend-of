@@ -47,7 +47,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('pagar', [ProductsController::class, 'pagarDeuda']);
 
         Route::prefix('tarjetas')->group(function () {
-            Route::post('crear', [ProductsController::class, 'addTarjetaToUser']);
+            Route::post('crear', [UsersController::class, 'addTarjetaToUser']);
             Route::post('detalle', [UsersController::class, 'getTarjetaDetail']);
             Route::post('listar', [UsersController::class, 'getUserTarjetas']);
         });

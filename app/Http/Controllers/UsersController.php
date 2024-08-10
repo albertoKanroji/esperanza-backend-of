@@ -284,6 +284,7 @@ class UsersController extends Controller
             'year' => 'required|integer',
             'mes' => 'required|integer',
             'cvv' => 'required|string|max:255',
+            'id' => 'required|string|max:255',
         ]);
 
         try {
