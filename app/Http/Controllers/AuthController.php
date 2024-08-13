@@ -19,6 +19,7 @@ class AuthController extends Controller
                 'name' => 'required|string|max:255',
                 'email' => 'required|string|email|max:255|unique:users',
                 'password' => 'required|string|min:8',
+                'rfc' => 'required|string|max:255',
             ]);
 
             // Crear el usuario
@@ -26,6 +27,7 @@ class AuthController extends Controller
                 'name' => $request->name,
                 'email' => $request->email,
                 'password' => Hash::make($request->password),
+                'rfc' => $request->rfc,
 
             ]);
 
