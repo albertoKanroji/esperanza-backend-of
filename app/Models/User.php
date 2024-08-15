@@ -32,7 +32,8 @@ class User extends Authenticatable
         'phone',
         'status',
         'image',
-        'saldo'
+        'saldo',
+        'rfc'
     ];
 
     /**
