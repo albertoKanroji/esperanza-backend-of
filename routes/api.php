@@ -21,6 +21,8 @@ use App\Http\Controllers\ContenedorController;
 |
 */
 
+Route::post('saldo', [UsersController::class, 'getSaldo']);
+
 // Rutas de autenticación
 Route::prefix('auth')->group(function () {
     Route::post('register', [AuthController::class, 'register']);
