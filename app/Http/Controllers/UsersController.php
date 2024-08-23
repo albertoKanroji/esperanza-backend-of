@@ -13,7 +13,58 @@ use Illuminate\Support\Facades\Auth;
 
 class UsersController extends Controller
 {
-
+    public function porRfc(Request $request, $rfc)
+    {
+        try {
+            // Verificar si el usuario está autenticado
+            if (!Auth::check()) {
+                return response()->json([
+                    'error' => 'Unauthorized',
+                    'message' => 'You must be authenticated to view this resource.'
+                ], 401);
+            }
+    
+            // Obtener el clienteId y el RFC de la solicitud
+            $clienteId = $request->query('clientes_id'); // Cambia aquí a 'clientes_id'
+            // El RFC se pasa como parte de la ruta
+            
+            // Verificar si se proporcionan el clienteId y el RFC
+            if (!$clienteId || !$rfc) {
+                return response()->json([
+                    'error' => 'Bad Request',
+                    'message' => 'Both clienteId and RFC are required to retrieve users.'
+                ], 400);
+            }
+    
+            // Filtrar los usuarios por clienteId y RFC
+            $user = User::where('id', $clienteId)
+                        ->where('rfc', $rfc)
+                        ->first();
+    
+            // Verificar si se encontró el usuario
+            if (!$user) {
+                return response()->json([
+                    'message' => 'No users found for the provided clienteId and RFC.'
+                ], 404);
+            }
+    
+            // Retornar el usuario encontrado como JSON
+            return response()->json($user);
+        } catch (QueryException $e) {
+            // Manejar errores de consulta a la base de datos
+            return response()->json([
+                'error' => 'Database Error',
+                'message' => 'An error occurred while retrieving the user.'
+            ], 500);
+        } catch (\Exception $e) {
+            // Manejar otros errores generales
+            return response()->json([
+                'error' => 'Server Error',
+                'message' => 'An unexpected error occurred.'
+            ], 500);
+        }
+    }
+    
 
     public function index()
     {

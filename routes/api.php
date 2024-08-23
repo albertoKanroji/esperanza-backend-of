@@ -32,6 +32,7 @@ Route::prefix('auth')->group(function () {
 });
 
     Route::put('/contenedor/{id}', [ContenedorController::class, 'update']);
+    Route::put('/contenedorStatus/{id}', [ContenedorController::class, 'updateContenedorStatus']);
 
 // Rutas protegidas por autenticación
 Route::middleware('auth:sanctum')->group(function () {
@@ -39,6 +40,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Rutas relacionadas con usuarios
     Route::prefix('users')->group(function () {
         Route::get('index', [UsersController::class, 'index']);
+        Route::get('porRfc/{rfc}', [UsersController::class, 'porRfc']);
         Route::post('logout', [AuthController::class, 'logout']);
         Route::post('saldo', [UsersController::class, 'getSaldo']);
         Route::post('admins', [UsersController::class, 'getAdmins']);
