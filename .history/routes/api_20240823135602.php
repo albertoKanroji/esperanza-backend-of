@@ -66,15 +66,12 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::post('crear', [UsersController::class, 'addTarjetaToUser']);
             Route::post('detalle', [UsersController::class, 'getTarjetaDetail']);
             Route::post('listar', [UsersController::class, 'getUserTarjetas']);
-
-
         });
     });
 
     // Rutas relacionadas con productos
     Route::prefix('producto')->group(function () {
         Route::post('detalle', [ProductsController::class, 'show']);
-        Route::post('pagar', [EntradasController::class, 'createCharge']);
     });
 
     // Rutas de historial
