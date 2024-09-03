@@ -10,6 +10,13 @@ use App\Http\Controllers\ProductsController;
 use App\Http\Controllers\SalidasController;
 use App\Http\Controllers\ContenedorController;
 
+use App\Models\Chat;
+use App\Models\Message;
+use App\Events\MessageSent;
+
+use App\Http\Controllers\ChatController;
+use App\Http\Controllers\MessageController;
+
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -31,8 +38,7 @@ Route::prefix('auth')->group(function () {
     Route::post('password/reset', [PasswordResetController::class, 'reset']);
 });
 
-    Route::put('/contenedor/{id}', [ContenedorController::class, 'update']);
-    Route::put('/contenedorStatus/{id}', [ContenedorController::class, 'updateContenedorStatus']);
+
 
 // Rutas protegidas por autenticación
 Route::middleware('auth:sanctum')->group(function () {
@@ -47,6 +53,26 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('employees', [UsersController::class, 'getEmployees']);
         Route::post('clients', [UsersController::class, 'getClients']);
         Route::post('soporte', [UsersController::class, 'getSupports']);
+        Route::put('/contenedor/{id}', [ContenedorController::class, 'update']);
+        Route::put('/contenedorStatus/{id}', [ContenedorController::class, 'updateContenedorStatus']);
+        Route::post('/get-user-id', [UsersController::class, 'getUserIdByEmail']);
+        Route::get('/{id}', [UsersController::class, 'show']);
+        Route::get('{user}/chats', [ChatController::class, 'getUserChats']);
+    });
+
+    Route::prefix('chats')->group(function () {
+        Route::get('/{userId}', [ChatController::class, 'index']);
+        Route::post('/store', [ChatController::class, 'store']);
+        Route::get('/{chat}/messages', [MessageController::class, 'index']);
+        Route::get('/user/{id}/chats', [ChatController::class, 'getUserChats']);
+        Route::post('/user-chats-by-email', [ChatController::class, 'getUserChatsByEmail']);
+    });
+
+    // Rutas para mensajes
+    Route::prefix('messages')->group(function () {
+        Route::post('/', [MessageController::class, 'store']);
+        Route::post('/check', [MessageController::class, 'findOrCreateChat']);
+        Route::post('/read/{chat}/messages/mark-as-read', [MessageController::class, 'markChatMessagesAsRead']);
     });
 
     // Rutas para generación de códigos QR
@@ -60,6 +86,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('deudas', [UsersController::class, 'getProductsByClientWithDebtSum']);
         Route::post('pagados', [UsersController::class, 'getProductsByClientWithSum']);
         Route::post('pagar', [ProductsController::class, 'pagarDeuda']);
+        Route::post('transfer-funds', [UsersController::class, 'transferFunds']);
 
         // Rutas para gestión de tarjetas
         Route::prefix('tarjetas')->group(function () {

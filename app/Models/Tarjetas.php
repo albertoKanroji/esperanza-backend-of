@@ -11,6 +11,7 @@ class Tarjetas extends Model
     protected $table = 'tarjetas';
 
     protected $fillable = [
+        'token',
         'number',
         'year',
         'mes',

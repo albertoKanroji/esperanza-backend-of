@@ -10,6 +10,10 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Transfers;
+use Illuminate\Support\Facades\Log;
+
+
 
 class UsersController extends Controller
 {
@@ -64,7 +68,64 @@ class UsersController extends Controller
             ], 500);
         }
     }
-    
+    public function transferFunds(Request $request)
+    {
+            // Verificar si el usuario está autenticado
+            if (!Auth::check()) {
+                return response()->json([
+                    'error' => 'Unauthorized',
+                    'message' => 'You must be authenticated to view this resource.'
+                ], 401);
+            }
+
+        $request->validate([
+            'id_sender' => 'required|integer|exists:users,id',
+            'id_receiver' => 'required|integer|exists:users,id',
+            'amount' => 'required|numeric|min:0.01', // Asume que la cantidad mínima a transferir es 0.01
+        ]);
+
+        $senderId = $request->id_sender;
+        $receiverId = $request->id_receiver;
+        $amount = $request->amount;
+
+        // Verificar que el remitente y el receptor no sean el mismo usuario
+        if ($senderId == $receiverId) {
+            return response()->json(['message' => 'No puedes transferir dinero a ti mismo'], 400);
+        }
+
+        $sender = User::find($senderId);
+        $receiver = User::find($receiverId);
+
+        // Verificar si el usuario que envía tiene suficiente saldo
+        if ($sender->saldo < $amount) {
+            return response()->json(['message' => 'Saldo insuficiente'], 400);
+        }
+
+        try {
+            // Descontar el monto del saldo del remitente
+            $sender->saldo -= $amount;
+            $sender->save();
+
+            // Aumentar el monto del saldo del receptor
+            $receiver->saldo += $amount;
+            $receiver->save();
+
+            // Registrar la transferencia
+            Transfers::create([
+                'id_sender' => $senderId,
+                'id_receiver' => $receiverId,
+                'amount' => $amount,
+                'description' => $request->description ?? 'Transferencia realizada',
+                'status' => 'completed', // O el estado que consideres adecuado
+            ]);
+
+            return response()->json(['message' => 'Transferencia realizada con éxito'], 200);
+        } catch (\Exception $e) {
+            Log::error('Transfer Error: ' . $e->getMessage());
+            return response()->json(['message' => 'Error en la transferencia', 'error' => $e->getMessage()], 500);
+        }
+        
+    }
 
     public function index()
     {
@@ -130,7 +191,7 @@ class UsersController extends Controller
             // Manejar errores de consulta a la base de datos
             return response()->json([
                 'error' => 'Database Error',
-                'message' => 'An error occurred while retrieving the user balance.'
+                'message' => 'An error occurred while retrieving the user saldo.'
             ], 500);
         } catch (\Exception $e) {
             // Manejar otros errores generales
@@ -383,6 +444,7 @@ class UsersController extends Controller
             $tarjetas = $user->tarjetas->map(function ($tarjeta) {
                 return [
                     'id' => $tarjeta->id,
+                    'token' => $tarjeta->token,
                     'number' => $tarjeta->number,
                     'year' => $tarjeta->year,
                     'mes' => $tarjeta->mes,
@@ -424,6 +486,59 @@ class UsersController extends Controller
                 'message' => 'Ocurrió un error al obtener el detalle de la tarjeta.',
                 'error' => $e->getMessage(),
             ], 500);
+        }
+    }
+
+    public function getUserIdByEmail(Request $request)
+    {
+        try {
+            $clientes_id = $request->input('clientes_id');
+            // Verificar si el usuario está autenticado
+            if (!Auth::check()) {
+                return response()->json([
+                    'error' => 'Unauthorized',
+                    'message' => 'You must be authenticated to view this resource.'
+                ], 401);
+            }
+    
+            $request->validate([
+                'email' => 'required|string|email|max:255',
+            ]);
+    
+            $user = User::where('email', $request->email)->first();
+    
+            if ($user) {
+                return response()->json(['id' => $user->id], 200);
+            } else {
+                return response()->json(['message' => 'User not found'], 404);
+            }
+        } catch (\Exception $e) {
+            // Manejar cualquier excepción que ocurra
+            return response()->json([
+                'error' => 'Server Error',
+                'message' => 'An error occurred while processing your request.',
+                'details' => $e->getMessage() // Puedes comentar esta línea en producción para no exponer detalles sensibles
+            ], 500);
+        }
+    }
+    
+    public function show(Request $request, $id) // Añadir Request como parámetro
+    {
+        $clientes_id = $request->input('clientes_id');
+        // Verificar si el usuario está autenticado
+        if (!Auth::check()) {
+            return response()->json([
+                'error' => 'Unauthorized',
+                'message' => 'You must be authenticated to view this resource.'
+            ], 401);
+        }
+
+        $user = User::find($id);
+
+        if ($user) {
+            return response()->json($user, 200);
+        } else {
+            return response()->json(['message' => 'User not found'], 404);
         }
     }
 }
