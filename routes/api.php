@@ -45,7 +45,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Rutas relacionadas con usuarios
     Route::prefix('users')->group(function () {
-        Route::get('index', [UsersController::class, 'index']);
+        Route::get('/', [UsersController::class, 'index']);
         Route::get('porRfc/{rfc}', [UsersController::class, 'porRfc']);
         Route::post('logout', [AuthController::class, 'logout']);
         Route::post('saldo', [UsersController::class, 'getSaldo']);
