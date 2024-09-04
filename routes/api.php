@@ -58,6 +58,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/get-user-id', [UsersController::class, 'getUserIdByEmail']);
         Route::get('/{id}', [UsersController::class, 'show']);
         Route::get('{user}/chats', [ChatController::class, 'getUserChats']);
+        Route::post('/createEntradaContenedores', [ContenedorController::class, 'createEntradaContenedoresS']);
     });
 
     Route::prefix('chats')->group(function () {

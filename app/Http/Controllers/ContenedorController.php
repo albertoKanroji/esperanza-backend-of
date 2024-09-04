@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use App\Models\Contenedor;
+use App\Models\EntradaContenedores;
 use Illuminate\Validation\ValidationException;
 
 class ContenedorController extends Controller
@@ -99,4 +100,46 @@ class ContenedorController extends Controller
             return response()->json(['message' => 'Error interno del servidor', 'error' => $e->getMessage()], 500);
         }
     }
+
+    public function createEntradaContenedoresS(Request $request)
+    {
+        try {
+            // Validar la solicitud
+            $validated = $request->validate([
+                'fecha_i' => 'required|date', 
+                'hora_i' => 'required|date_format:H:i', 
+                'fecha_s' => 'required|date', 
+                'hora_s' => 'required|date_format:H:i', 
+                'id_cliente' => 'required|integer',
+                'id_transportista' => 'required|integer',
+                'placas' => 'required|string',
+                'eco' => 'required|string',
+                'licencia' => 'required|string',
+                'operador' => 'required|string',
+                'observaciones' => 'required|string',
+                '_key' => 'required|string',
+                'estado' => 'required|string',
+                'tipo' => 'required|string'
+            ]);
+    
+            // Guardar los datos usando el modelo EntradaContenedores
+            $entrada = EntradaContenedores::create($validated);
+    
+            // Enviar los datos a la API externa en PHP
+            $response = Http::post('http://demo11.xrom.cc/nucleo/var/receive_data_createEntrada.php', $validated);
+    
+            // Verificar si la API respondió exitosamente
+            if ($response->successful()) {
+                return response()->json(['message' => 'Entrada creada y datos enviados'], 201);
+            } else {
+                return response()->json(['message' => 'Entrada creada, pero error al enviar datos', 'response_body' => $response->body()], $response->status());
+            }
+    
+        } catch (ValidationException $e) {
+            return response()->json(['message' => 'Error de validación', 'errors' => $e->errors()], 422);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Error interno del servidor', 'error' => $e->getMessage()], 500);
+        }
+    }
+    
 }
