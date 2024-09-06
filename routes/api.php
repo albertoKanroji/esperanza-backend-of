@@ -59,6 +59,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/{id}', [UsersController::class, 'show']);
         Route::get('{user}/chats', [ChatController::class, 'getUserChats']);
         Route::post('/createEntradaContenedores', [ContenedorController::class, 'createEntradaContenedoresS']);
+        Route::post('/createContenedores', [ContenedorController::class, 'createContenedoresS']);
     });
 
     Route::prefix('chats')->group(function () {
@@ -91,7 +92,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
         // Rutas para gestión de tarjetas
         Route::prefix('tarjetas')->group(function () {
-            Route::post('crear', [UsersController::class, 'addTarjetaToUser']);
+            Route::post('crear/{userId}', [UsersController::class, 'addTarjetaToUser']);
             Route::post('detalle', [UsersController::class, 'getTarjetaDetail']);
             Route::post('listar', [UsersController::class, 'getUserTarjetas']);
 

@@ -11,6 +11,7 @@ use Illuminate\Validation\ValidationException;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Transfers;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Log;
 
 
@@ -391,38 +392,49 @@ class UsersController extends Controller
     public function addTarjetaToUser(Request $request, $userId)
     {
         // Validar la solicitud
-        $request->validate([
-            'number' => 'required|string|max:255',
-            'year' => 'required|integer',
-            'mes' => 'required|integer',
-            'cvv' => 'required|string|max:255',
-            'id' => 'required|string|max:255',
+        $validatedData = $request->validate([
+            'token' => 'required|string', // El token de la tarjeta
+            'card' => 'required|string|min:13|max:16', // Número de tarjeta entre 13 y 16 dígitos
+            'year' => 'required|integer|digits:4', // Año de expiración con 4 dígitos
+            'mes' => 'required|integer|between:1,12', // Mes de expiración entre 1 y 12
+            'ccv' => 'required|string|min:3|max:4', // CVV de 3 o 4 dígitos
+            'cardHolder' => 'required|string|max:255', // Nombre del titular de la tarjeta
         ]);
-
+    
         try {
             // Buscar el usuario por ID
             $user = User::findOrFail($userId);
-
+    
             // Crear una nueva tarjeta
-            $tarjeta = Tarjetas::create([
-                'number' => $request->input('number'),
-                'year' => $request->input('year'),
-                'mes' => $request->input('mes'),
-                'cvv' => $request->input('cvv'),
+            $tarjeta = new Tarjetas([
+                'number' => encrypt($validatedData['card']), // Encriptar el número de la tarjeta
+                'year' => $validatedData['year'],
+                'mes' => $validatedData['mes'],
+                'cvv' => encrypt($validatedData['ccv']), // Encriptar el CVV
+                'titular' => $validatedData['cardHolder'], // Guardar el nombre del titular
+                'token' => $validatedData['token'], // Guardar el token de la tarjeta
             ]);
-
+            $tarjeta->save();
+    
             // Relacionar la tarjeta con el usuario
             $user->tarjetas()->attach($tarjeta->id);
-
+    
             // Retornar una respuesta exitosa
             return response()->json([
                 'status' => 'success',
                 'message' => 'Tarjeta añadida exitosamente al usuario.',
                 'data' => [
                     'user' => $user,
-                    'tarjeta' => $tarjeta,
+                    'tarjeta' => [
+                        'id' => $tarjeta->id,
+                        'last_four_digits' => substr($validatedData['card'], -4), // Mostrar solo los últimos 4 dígitos
+                        'year' => $tarjeta->year,
+                        'mes' => $tarjeta->mes,
+                        'holder_name' => $tarjeta->holder_name,
+                    ],
                 ],
             ], 201);
+    
         } catch (\Exception $e) {
             // Manejar cualquier error
             return response()->json([
@@ -432,34 +444,54 @@ class UsersController extends Controller
             ], 500);
         }
     }
+    
     public function getUserTarjetas(Request $request)
     {
         try {
             $clientes_id = $request->input('clientes_id');
-
+    
             // Buscar el usuario por ID
             $user = User::findOrFail($clientes_id);
-
+    
             // Obtener todas las tarjetas del usuario
             $tarjetas = $user->tarjetas->map(function ($tarjeta) {
+                try {
+                    // Attempt to decrypt the number and CVV fields
+                    $decryptedCardNumber = Crypt::decryptString($tarjeta->number);
+                    $decryptedCVV = Crypt::decryptString($tarjeta->cvv);
+                } catch (\Exception $e) {
+                    // If decryption fails, assume the data is already in plain text or in s:16:"..." format
+                    $decryptedCardNumber = $tarjeta->number;
+                    $decryptedCVV = $tarjeta->cvv;
+                }
+    
+                // Remove s:16:"..." and s:3:"..." formatting if present
+                if (preg_match('/^s:\d+:"(.*)";$/', $decryptedCardNumber, $matches)) {
+                    $decryptedCardNumber = $matches[1];
+                }
+                if (preg_match('/^s:\d+:"(.*)";$/', $decryptedCVV, $matches)) {
+                    $decryptedCVV = $matches[1];
+                }
+    
+                // Return the cleaned-up or decrypted values
                 return [
                     'id' => $tarjeta->id,
                     'token' => $tarjeta->token,
-                    'number' => $tarjeta->number,
+                    'number' => $decryptedCardNumber, // Cleaned-up card number
+                    'cvv' => $decryptedCVV,           // Cleaned-up CVV
                     'year' => $tarjeta->year,
                     'mes' => $tarjeta->mes,
-                    'cvv' => $tarjeta->cvv,
-                    // Agrega aquí cualquier otro campo que desees incluir en la respuesta
+                    'titular' => $tarjeta->titular,
                 ];
             });
-
-            // Retornar una respuesta exitosa
+    
+            // Return a successful response
             return response()->json([
                 'status' => 'success',
                 'data' => $tarjetas,
             ], 200);
         } catch (\Exception $e) {
-            // Manejar cualquier error
+            // Handle any errors that occur during the process
             return response()->json([
                 'status' => 'error',
                 'message' => 'Ocurrió un error al obtener las tarjetas del usuario.',
@@ -467,6 +499,10 @@ class UsersController extends Controller
             ], 500);
         }
     }
+    
+
+    
+    
 
     public function getTarjetaDetail($tarjetaId)
     {
