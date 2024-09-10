@@ -54,6 +54,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('clients', [UsersController::class, 'getClients']);
         Route::post('soporte', [UsersController::class, 'getSupports']);
         Route::put('/contenedor/{id}', [ContenedorController::class, 'update']);
+        Route::put('/entradasPagar/{id}', [ContenedorController::class, 'updateEntradasPagar']);
         Route::put('/contenedorStatus/{id}', [ContenedorController::class, 'updateContenedorStatus']);
         Route::post('/get-user-id', [UsersController::class, 'getUserIdByEmail']);
         Route::get('/{id}', [UsersController::class, 'show']);
@@ -93,6 +94,7 @@ Route::middleware('auth:sanctum')->group(function () {
         // Rutas para gestión de tarjetas
         Route::prefix('tarjetas')->group(function () {
             Route::post('crear/{userId}', [UsersController::class, 'addTarjetaToUser']);
+            Route::post('/eliminar/{userId}/{tarjetaId}', [UsersController::class, 'deleteTarjetaFromUser']);
             Route::post('detalle', [UsersController::class, 'getTarjetaDetail']);
             Route::post('listar', [UsersController::class, 'getUserTarjetas']);
 

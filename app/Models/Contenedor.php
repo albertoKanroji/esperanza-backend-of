@@ -13,7 +13,7 @@ class Contenedor extends Model
     protected $connection = 'mysql_second';
 
     // Especifica el nombre de la tabla si no sigue la convención plural
-    protected $table = 'patio_ingreso';
+    protected $table = 'patio_estadia';
 
     // Especifica la clave primaria de la tabla
     protected $primaryKey = 'folio';

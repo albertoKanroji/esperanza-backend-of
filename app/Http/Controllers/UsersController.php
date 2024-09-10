@@ -395,8 +395,8 @@ class UsersController extends Controller
         $validatedData = $request->validate([
             'token' => 'required|string', // El token de la tarjeta
             'card' => 'required|string|min:13|max:16', // Número de tarjeta entre 13 y 16 dígitos
-            'year' => 'required|integer|digits:4', // Año de expiración con 4 dígitos
-            'mes' => 'required|integer|between:1,12', // Mes de expiración entre 1 y 12
+            'year' => 'required|string|digits:4', // Año de expiración con 4 dígitos
+            'mes' => 'required|string|size:2', // Mes de expiración en formato de 2 dígitos, // Mes de expiración entre 1 y 12
             'ccv' => 'required|string|min:3|max:4', // CVV de 3 o 4 dígitos
             'cardHolder' => 'required|string|max:255', // Nombre del titular de la tarjeta
         ]);
@@ -444,6 +444,38 @@ class UsersController extends Controller
             ], 500);
         }
     }
+
+    public function deleteTarjetaFromUser(Request $request, $userId, $tarjetaId)
+{
+    try {
+        // Find the user by ID
+        $user = User::findOrFail($userId);
+
+        // Find the tarjeta (card) by ID
+        $tarjeta = Tarjetas::findOrFail($tarjetaId);
+
+        // Remove the relationship between the user and the card
+        $user->tarjetas()->detach($tarjetaId);
+
+        // Delete the card from the tarjetas table
+        $tarjeta->delete();
+
+        // Return a success response
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Tarjeta eliminada exitosamente.',
+        ], 200);
+
+    } catch (\Exception $e) {
+        // Handle any errors during the deletion process
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Ocurrió un error al eliminar la tarjeta.',
+            'error' => $e->getMessage(),
+        ], 500);
+    }
+}
+
     
     public function getUserTarjetas(Request $request)
     {

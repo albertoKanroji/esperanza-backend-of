@@ -11,6 +11,8 @@ use App\Models\createContenedores;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Log; // Aquí la importación correcta de Log
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
+
 
 
 class ContenedorController extends Controller
@@ -19,6 +21,14 @@ class ContenedorController extends Controller
     public function update(Request $request, $folio)
     {
         try {
+            // Verificar si el usuario está autenticado
+            if (!Auth::check()) {
+                return response()->json([
+                    'error' => 'Unauthorized',
+                    'message' => 'You must be authenticated to view this resource.'
+                ], 401);
+            }
+    
             // Validar la solicitud
             $validated = $request->validate([
                 '_pagado' => 'required|string', // Espera 'SI' o 'NO' en el request
@@ -27,8 +37,8 @@ class ContenedorController extends Controller
             // Convertir $folio a string si es necesario
             $folio = (string) $folio;
     
-            // Buscar el contenedor por el folio
-            $contenedor = Contenedor::find($folio);
+            // Asegúrate de buscar exactamente el contenedor por el folio
+            $contenedor = Contenedor::where('folio', '=', $folio)->first(); // Uso de coincidencia exacta
     
             if (!$contenedor) {
                 return response()->json(['message' => 'Contenedor no encontrado', 'folio' => $folio], 404);
@@ -41,7 +51,7 @@ class ContenedorController extends Controller
             $contenedor->estado = $estado;
             $contenedor->save();
     
-            // Enviar los datos a otro servidor (si es necesario)
+            // Enviar los datos a otro servidor
             $response = Http::post('http://demo11.xrom.cc/nucleo/var/receive_data_update.php', [
                 'folio' => $folio,
                 '_pagado' => $validated['_pagado'],
@@ -60,10 +70,70 @@ class ContenedorController extends Controller
         }
     }
     
+    public function updateEntradasPagar(Request $request, $folio)
+    {
+        try {
+            // Verificar si el usuario está autenticado
+            if (!Auth::check()) {
+                return response()->json([
+                    'error' => 'Unauthorized',
+                    'message' => 'You must be authenticated to view this resource.'
+                ], 401);
+            }
+    
+            // Validar la solicitud
+            $validated = $request->validate([
+                '_pagado' => 'required|string', // Espera 'SI' o 'NO' en el request
+            ]);
+    
+            // Convertir $folio a string si es necesario
+            $folio = (string) $folio;
+    
+            // Buscar el contenedor por id_ingreso o el campo que corresponda
+            $contenedor = Contenedor::where('id_ingreso', $folio)->first(); // Asegúrate de que 'id_ingreso' es el campo correcto
+    
+            if (!$contenedor) {
+                return response()->json(['message' => 'Contenedor no encontrado', 'folio' => $folio], 404);
+            }
+    
+            // Convertir 1 o 0 en lugar de 'SI' o 'NO'
+            $estado = ($validated['_pagado'] == 1) ? 1 : 0;
+
+    
+            // Actualizar el campo estado
+            $contenedor->_pagado = $estado; // Asegúrate de actualizar el campo correcto
+            $contenedor->save();
+    
+            // Enviar los datos a otro servidor (si es necesario)
+            $response = Http::post('http://demo11.xrom.cc/nucleo/var/receive_data_updateEntradasPagar.php', [
+                'folio' => $folio,
+                '_pagado' => $validated['_pagado'],
+            ]);
+    
+            if ($response->successful()) {
+                return response()->json(['message' => 'Contenedor actualizado y datos enviados'], 200);
+            } else {
+                return response()->json(['message' => 'Contenedor actualizado, pero error al enviar datos'], $response->status());
+            }
+    
+        } catch (ValidationException $e) {
+            return response()->json(['message' => 'Error de validación', 'errors' => $e->errors()], 422);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Error interno del servidor', 'error' => $e->getMessage()], 500);
+        }
+    }
     
     public function updateContenedorStatus(Request $request, $folio)
     {
         try {
+
+                        // Verificar si el usuario está autenticado
+                        if (!Auth::check()) {
+                            return response()->json([
+                                'error' => 'Unauthorized',
+                                'message' => 'You must be authenticated to view this resource.'
+                            ], 401);
+                        }
             // Validar la solicitud
             $validated = $request->validate([
                 'status' => 'required|string',
@@ -155,18 +225,14 @@ class ContenedorController extends Controller
             // Validar la solicitud
             $validated = $request->validate([
                 'no_contenedor' => 'required|string', 
-                'sello' => 'required|string', 
+                'sello' => 'required|string',
+                'ct' => 'required|string', 
                 'estado' => 'required|string', 
                 'pedimento' => 'required|string', 
                 'tipo_contenedor' => 'required|string',
-                'id_patio' => 'required|string',
-                'posicion' => 'required|string',
-                'fila' => 'required|string',
-                'nivel' => 'required|string',
                 'id_cliente' => 'required|string',
                 'id_ingreso' => 'required|string',
                 'f_ingreso' => 'required|string',
-                'f_salida' => 'required|string'
             ]);
     
             // Guardar los datos usando el modelo EntradaContenedores
