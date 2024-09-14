@@ -69,6 +69,125 @@ class ContenedorController extends Controller
             return response()->json(['message' => 'Error interno del servidor', 'error' => $e->getMessage()], 500);
         }
     }
+
+    public function updateAddContenedor(Request $request, $folio)
+    {
+        try {
+            // Verificar si el usuario está autenticado
+            if (!Auth::check()) {
+                return response()->json([
+                    'error' => 'Unauthorized',
+                    'message' => 'You must be authenticated to view this resource.'
+                ], 401);
+            }
+    
+            // Validar la solicitud
+            $validated = $request->validate([
+                'id_salida' => 'required|string',
+                'estado' => 'required|string',
+                'f_salida' => 'required|string',
+            ]);
+    
+            // Convertir $folio a string si es necesario
+            $folio = (string) $folio;
+    
+            // Asegúrate de buscar exactamente el contenedor por el folio
+            $contenedor = Contenedor::where('folio', $folio)->first(); // Uso de coincidencia exacta
+    
+            if (!$contenedor) {
+                return response()->json([
+                    'message' => 'Contenedor no encontrado',
+                    'folio' => $folio
+                ], 404);
+            }
+    
+            // Actualizar el campo estado
+            $contenedor->id_salida = $validated['id_salida'];
+            $contenedor->estado = $validated['estado'];
+            $contenedor->save();
+    
+            // Enviar los datos a otro servidor
+            $response = Http::post('http://demo11.xrom.cc/nucleo/var/receive_data_updateAddContenedor.php', [
+                'folio' => $folio,
+                'id_salida' => $validated['id_salida'],
+                'estado' => $validated['estado'],
+                'f_salida' => $validated['f_salida'],
+            ]);
+    
+            if ($response->successful()) {
+                return response()->json(['message' => 'Contenedor actualizado y datos enviados'], 200);
+            } else {
+                return response()->json(['message' => 'Contenedor actualizado, pero error al enviar datos'], $response->status());
+            }
+    
+        } catch (ValidationException $e) {
+            return response()->json(['message' => 'Error de validación', 'errors' => $e->errors()], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error interno del servidor', 
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+    
+    public function CerrarSalida(Request $request, $folio)
+    {
+        try {
+            // Verificar si el usuario está autenticado
+            if (!Auth::check()) {
+                return response()->json([
+                    'error' => 'Unauthorized',
+                    'message' => 'You must be authenticated to view this resource.'
+                ], 401);
+            }
+    
+            // Validar la solicitud
+            $validated = $request->validate([
+                'estado' => 'required|string',
+            ]);
+    
+            // Convertir $folio a string si es necesario
+            $folio = (string) $folio;
+    
+            // Buscar exactamente el contenedor por el folio
+            $contenedor = EntradaContenedores::where('folio', $folio)->first();
+    
+            if (!$contenedor) {
+                return response()->json([
+                    'message' => 'Contenedor no encontrado',
+                    'folio' => $folio
+                ], 404);
+            }
+    
+            // Actualizar el campo estado
+            $contenedor->estado = $validated['estado'];
+            $contenedor->save();
+    
+            // Enviar los datos a otro servidor
+            $response = Http::post('http://demo11.xrom.cc/nucleo/var/receive_data_updateCerrarSalida.php', [
+                'folio' => $folio,
+                'estado' => $validated['estado'],
+            ]);
+    
+            if ($response->successful()) {
+                return response()->json(['message' => 'Contenedor actualizado y datos enviados'], 200);
+            } else {
+                return response()->json(['message' => 'Contenedor actualizado, pero error al enviar datos'], $response->status());
+            }
+    
+        } catch (ValidationException $e) {
+            return response()->json(['message' => 'Error de validación', 'errors' => $e->errors()], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error interno del servidor', 
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+    
+    
+    
+    
     
     public function updateEntradasPagar(Request $request, $folio)
     {

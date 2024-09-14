@@ -53,9 +53,14 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('employees', [UsersController::class, 'getEmployees']);
         Route::post('clients', [UsersController::class, 'getClients']);
         Route::post('soporte', [UsersController::class, 'getSupports']);
+        
         Route::put('/contenedor/{id}', [ContenedorController::class, 'update']);
         Route::put('/entradasPagar/{id}', [ContenedorController::class, 'updateEntradasPagar']);
         Route::put('/contenedorStatus/{id}', [ContenedorController::class, 'updateContenedorStatus']);
+        Route::put('/addContendedor/{folio}', [ContenedorController::class, 'updateAddContenedor']);
+        Route::put('/CerrarSalida/{folio}', [ContenedorController::class, 'CerrarSalida']);
+
+
         Route::post('/get-user-id', [UsersController::class, 'getUserIdByEmail']);
         Route::get('/{id}', [UsersController::class, 'show']);
         Route::get('{user}/chats', [ChatController::class, 'getUserChats']);
