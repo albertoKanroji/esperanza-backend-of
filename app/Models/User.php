@@ -33,7 +33,8 @@ class User extends Authenticatable
         'status',
         'image',
         'saldo',
-        'rfc'
+        'rfc',
+        'fcm_token'
     ];
 
     /**

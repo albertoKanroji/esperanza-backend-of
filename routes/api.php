@@ -7,8 +7,11 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\EntradasController;
 use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\ProductsController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\SalidasController;
 use App\Http\Controllers\ContenedorController;
+
+use App\Http\Controllers\ProfilePhotoController;
 
 use App\Models\Chat;
 use App\Models\Message;
@@ -53,19 +56,31 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('employees', [UsersController::class, 'getEmployees']);
         Route::post('clients', [UsersController::class, 'getClients']);
         Route::post('soporte', [UsersController::class, 'getSupports']);
+
+        Route::post('/store-token', [NotificationController::class, 'storeToken']);
+
+
+        route::post('/upload-profile-photo', [ProfilePhotoController::class, 'upload']);
+        route::get('/get-user-profile-photo', [ProfilePhotoController::class, 'getProfilePhoto']);
         
         Route::put('/contenedor/{id}', [ContenedorController::class, 'update']);
         Route::put('/entradasPagar/{id}', [ContenedorController::class, 'updateEntradasPagar']);
         Route::put('/contenedorStatus/{id}', [ContenedorController::class, 'updateContenedorStatus']);
         Route::put('/addContendedor/{folio}', [ContenedorController::class, 'updateAddContenedor']);
         Route::put('/CerrarSalida/{folio}', [ContenedorController::class, 'CerrarSalida']);
-
+        Route::put('/updateName/{id}', [UsersController::class, 'updateName']);
+        Route::put('/updateEmail/{id}', [UsersController::class, 'updateEmail']);
+        Route::put('/updateRfc/{id}', [UsersController::class, 'updateRfc']);
+        Route::put('/updatePassword/{id}', [UsersController::class, 'updatePassword']);
+        Route::put('/{id}', [UsersController::class, 'updateUserInfo']);
 
         Route::post('/get-user-id', [UsersController::class, 'getUserIdByEmail']);
         Route::get('/{id}', [UsersController::class, 'show']);
         Route::get('{user}/chats', [ChatController::class, 'getUserChats']);
         Route::post('/createEntradaContenedores', [ContenedorController::class, 'createEntradaContenedoresS']);
         Route::post('/createContenedores', [ContenedorController::class, 'createContenedoresS']);
+
+        route::get('/info/{id}', [UsersController::class, 'getInfoUser']);
     });
 
     Route::prefix('chats')->group(function () {

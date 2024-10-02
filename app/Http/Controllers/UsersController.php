@@ -13,11 +13,64 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Transfers;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 
 
 class UsersController extends Controller
 {
+    public function updateUserInfo(Request $request, $id)
+    {
+        // Verificar si el usuario está autenticado
+        if (!Auth::check()) {
+            return response()->json([
+                'error' => 'Unauthorized',
+                'message' => 'You must be authenticated to view this resource.'
+            ], 401);
+        }
+    
+        // Obtener el usuario que se quiere actualizar
+        $user = User::findOrFail($id); // Busca el usuario por ID
+    
+        // Validar los datos recibidos
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'phone' => 'nullable|string|max:20',
+            'email' => 'required|string|email|max:255',
+            'profile' => 'nullable|string|max:100',
+            'rfc' => 'nullable|string|max:13',
+            'status' => 'nullable|string|max:50',
+        ]);
+    
+        // Actualiza los campos del usuario
+        $user->name = $request->name;
+        $user->phone = $request->phone;
+        $user->email = $request->email;
+        $user->profile = $request->profile;
+        $user->status = $request->status;
+        $user->rfc = $request->rfc;
+    
+        try {
+            // Guardar cambios
+            $user->save();
+    
+            // Retornar el usuario actualizado
+            return response()->json([
+                'message' => 'Usuario actualizado con éxito.',
+                'user' => $user
+            ], 200);
+        } catch (\Exception $e) {
+            \Log::error('Error al actualizar usuario: ' . $e->getMessage());
+            return response()->json([
+                'error' => 'Error al actualizar el usuario.',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+    
+    
+    
+    
     public function porRfc(Request $request, $rfc)
     {
         try {
@@ -609,4 +662,160 @@ class UsersController extends Controller
             return response()->json(['message' => 'User not found'], 404);
         }
     }
+
+    public function getInfoUser(Request $request, $id) {
+        if (!Auth::check()) {
+            return response()->json([
+                'error' => 'Unauthorized',
+                'message' => 'You must be authenticated to view this resource.'
+            ], 401);
+        }
+        
+        $user = User::find($id);
+    
+        if ($user) {
+            return response()->json($user, 200);
+        } else {
+            return response()->json(['message' => 'User not found'], 404);
+        }
+    }
+    
+    public function updateName(Request $request, $id)
+    {
+        // Verificar si el usuario autenticado es el mismo que se quiere actualizar
+        if (!Auth::check()) {
+            return response()->json([
+                'error' => 'Unauthorized',
+                'message' => 'You must be authenticated to view this resource.'
+            ], 401);
+        }
+        // Validar los datos de entrada
+        $validatedData = $request->validate([
+            'name' => 'required|string|max:255',
+            // Agrega otras validaciones si es necesario
+        ]);
+
+        try {
+            // Buscar al usuario por ID
+            $user = User::findOrFail($id);
+
+            // Actualizar el nombre del usuario
+            $user->name = $validatedData['name'];
+            $user->save();
+
+            return response()->json([
+                'message' => 'Nombre actualizado correctamente',
+                'user' => $user
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Error al actualizar el nombre'], 500);
+        }
+    }
+
+    public function updateEmail(Request $request, $id)
+    {
+        // Verificar si el usuario autenticado es el mismo que se quiere actualizar
+        if (!Auth::check()) {
+            return response()->json([
+                'error' => 'Unauthorized',
+                'message' => 'You must be authenticated to view this resource.'
+            ], 401);
+        }
+        // Validar los datos de entrada
+        $validatedData = $request->validate([
+            'email' => 'required|string|max:255',
+            // Agrega otras validaciones si es necesario
+        ]);
+
+        try {
+            // Buscar al usuario por ID
+            $user = User::findOrFail($id);
+
+            // Actualizar el nombre del usuario
+            $user->email = $validatedData['email'];
+            $user->save();
+
+            return response()->json([
+                'message' => 'Email actualizado correctamente',
+                'user' => $user
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Error al actualizar el Email'], 500);
+        }
+    }
+
+    public function updateRfc(Request $request, $id)
+    {
+        // Verificar si el usuario autenticado es el mismo que se quiere actualizar
+        if (!Auth::check()) {
+            return response()->json([
+                'error' => 'Unauthorized',
+                'message' => 'You must be authenticated to view this resource.'
+            ], 401);
+        }
+        // Validar los datos de entrada
+        $validatedData = $request->validate([
+            'rfc' => 'required|string|max:255',
+            // Agrega otras validaciones si es necesario
+        ]);
+
+        try {
+            // Buscar al usuario por ID
+            $user = User::findOrFail($id);
+
+            // Actualizar el nombre del usuario
+            $user->rfc = $validatedData['rfc'];
+            $user->save();
+
+            return response()->json([
+                'message' => 'Rfc actualizado correctamente',
+                'user' => $user
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Error al actualizar el Rfc'], 500);
+        }
+    }
+
+    public function updatePassword(Request $request, $id)
+    {
+        // Verificar si el usuario autenticado es el mismo que se quiere actualizar
+        if (!Auth::check()) {
+            return response()->json([
+                'error' => 'Unauthorized',
+                'message' => 'You must be authenticated to view this resource.'
+            ], 401);
+        }
+    
+        // Validar los datos de entrada
+        $validatedData = $request->validate([
+            'password' => 'required|string|min:8',
+        ]);
+    
+        try {
+            // Buscar al usuario por ID
+            $user = User::findOrFail($id);
+    
+            // Encriptar la nueva contraseña
+            $hashedPassword = Hash::make($validatedData['password']);
+    
+            // Actualizar la contraseña del usuario
+            $user->password = $hashedPassword;
+            $user->save();
+    
+            return response()->json([
+                'message' => 'Contraseña actualizada correctamente',
+                'user' => $user
+            ], 200);
+        } catch (ValidationException $e) {
+            // Manejar errores de validación
+            return response()->json([
+                'error' => 'Validation Error',
+                'message' => $e->errors(),
+            ], 422);
+        } catch (\Exception $e) {
+            // Manejar otros errores
+            return response()->json(['error' => 'Error al actualizar la contraseña'], 500);
+        }
+    }
+    
 }
