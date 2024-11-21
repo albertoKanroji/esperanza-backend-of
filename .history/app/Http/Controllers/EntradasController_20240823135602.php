@@ -10,10 +10,7 @@ use App\Models\SalidaRecogerProducto;
 use Illuminate\Support\Facades\Validator;
 use Endroid\QrCode\QrCode;
 use Endroid\QrCode\Writer\PngWriter;
-use Stripe;
-use Stripe\Stripe as StripeStripe;
-use Stripe\Exception\ApiErrorException;
-use Stripe\StripeClient;
+
 class EntradasController extends Controller
 {
     public function store(Request $request)
@@ -141,46 +138,6 @@ class EntradasController extends Controller
                 ->header('Content-Type', 'image/png');
         } catch (\Exception $e) {
             return response()->json(['status' => 'error', 'data' => $e->getMessage()], 500);
-        }
-    }
-
-    public function createCharge(Request $request)
-    {
-        try {
-            $stripe = new StripeClient(env('STRIPE_SECRET'));
-
-            // Primero crea un cliente
-            $customer = $stripe->customers->create([
-                'description' => 'Customer for ' . $request->description,
-                'email' => 'customer@example.com', // O el correo electrónico proporcionado por el usuario
-            ]);
-
-            // Luego asocia la tarjeta al cliente
-            $stripe->customers->createSource($customer->id, [
-                'source' => $request->source, // Token recibido del frontend
-            ]);
-
-            // Finalmente, crea el cargo usando el cliente y la fuente asociada
-            $response = $stripe->charges->create([
-                'amount' => $request->amount,
-                'currency' => 'mxn',
-                'customer' => $customer->id,
-                'description' => $request->description,
-            ]);
-
-            return response()->json([$response->status], 201);
-        } catch (ApiErrorException $e) {
-            return response()->json([
-                'response' => 'error',
-                'message' => $e->getError()->message,
-                'type' => $e->getError()->type,
-                'code' => $e->getError()->code,
-            ], 500);
-        } catch (\Exception $e) {
-            return response()->json([
-                'response' => 'error',
-                'message' => $e->getMessage(),
-            ], 500);
         }
     }
 }

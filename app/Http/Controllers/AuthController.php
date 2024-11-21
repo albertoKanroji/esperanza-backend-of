@@ -11,9 +11,11 @@ use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 {
+    
     public function register(Request $request)
     {
         try {
+            // Validar la solicitud
             $request->validate([
                 'name' => 'required|string|max:255',
                 'email' => 'required|string|email|max:255|unique:users',
@@ -25,9 +27,10 @@ class AuthController extends Controller
                 'name' => $request->name,
                 'email' => $request->email,
                 'password' => Hash::make($request->password),
-                'rfc' => $request->rfc,
+                'rfc' => $request->rfc
             ]);
 
+            // Generar el token
             $token = $user->createToken('auth_token')->plainTextToken;
 
             return response()->json([
@@ -40,6 +43,7 @@ class AuthController extends Controller
                 'message' => $e->errors(),
             ], 422);
         } catch (QueryException $e) {
+            // Manejar errores de base de datos
             return response()->json([
                 'error' => 'Database Error',
                 'message' => 'An error occurred while saving the user.',

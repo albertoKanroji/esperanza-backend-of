@@ -8,21 +8,21 @@ use Illuminate\Database\Eloquent\Model;
 class Message extends Model
 {
     use HasFactory;
-    protected $table = 'messages';
+    public $timestamps = false;
 
-    protected $fillable = [
-        'users_id',
-        'users_id1',
-        'contenido'
-    ];
+    protected $fillable = ['sender_id', 'receiver_id', 'content','chat_id', 'is_read'];
+   // protected $fillable = ['sender_id', 'receiver_id', 'content', 'chat_id'];
 
-    public function user()
+    // Relación con el usuario que envía el mensaje
+    public function sender()
     {
-        return $this->belongsTo(User::class, 'users_id');
+        return $this->belongsTo(User::class, 'sender_id');
     }
 
-    public function user1()
+    // Relación con el usuario que recibe el mensaje
+    public function receiver()
     {
-        return $this->belongsTo(User::class, 'users_id1');
+        return $this->belongsTo(User::class, 'receiver_id');
     }
+    
 }

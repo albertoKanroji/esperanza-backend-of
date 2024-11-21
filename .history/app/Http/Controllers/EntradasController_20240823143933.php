@@ -163,7 +163,7 @@ class EntradasController extends Controller
             // Finalmente, crea el cargo usando el cliente y la fuente asociada
             $response = $stripe->charges->create([
                 'amount' => $request->amount,
-                'currency' => 'mxn',
+                'currency' => 'usd',
                 'customer' => $customer->id,
                 'description' => $request->description,
             ]);
