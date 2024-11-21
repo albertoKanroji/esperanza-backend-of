@@ -14,7 +14,6 @@ class AuthController extends Controller
     public function register(Request $request)
     {
         try {
-            // Validar la solicitud
             $request->validate([
                 'name' => 'required|string|max:255',
                 'email' => 'required|string|email|max:255|unique:users',
@@ -22,40 +21,30 @@ class AuthController extends Controller
                 'rfc' => 'required|string|max:255',
             ]);
 
-            // Crear el usuario
             $user = User::create([
                 'name' => $request->name,
                 'email' => $request->email,
                 'password' => Hash::make($request->password),
-<<<<<<< HEAD
-=======
                 'rfc' => $request->rfc,
-
->>>>>>> 8b0b78c93d309a374ebdf75513a954bd94fd8005
             ]);
 
-            // Generar el token
             $token = $user->createToken('auth_token')->plainTextToken;
 
-            // Retornar la respuesta con el token
             return response()->json([
                 'access_token' => $token,
                 'token_type' => 'Bearer',
             ]);
         } catch (ValidationException $e) {
-            // Manejar errores de validación
             return response()->json([
                 'error' => 'Validation Error',
                 'message' => $e->errors(),
             ], 422);
         } catch (QueryException $e) {
-            // Manejar errores de base de datos
             return response()->json([
                 'error' => 'Database Error',
                 'message' => 'An error occurred while saving the user.',
             ], 500);
         } catch (\Exception $e) {
-            // Manejar otros errores
             return response()->json([
                 'error' => 'Server Error',
                 'message' => 'An unexpected error occurred.',
@@ -63,12 +52,6 @@ class AuthController extends Controller
         }
     }
 
-    /**
-     * Login a user and return the token.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\JsonResponse
-     */
     public function login(Request $request)
     {
         $request->validate([
@@ -77,7 +60,6 @@ class AuthController extends Controller
         ]);
 
         $credentials = $request->only('email', 'password');
-
 
         if (!Auth::attempt($credentials)) {
             return response()->json([
@@ -96,7 +78,6 @@ class AuthController extends Controller
             'user' => $user
         ]);
     }
-
 
     public function logout(Request $request)
     {
