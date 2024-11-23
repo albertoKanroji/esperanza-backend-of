@@ -50,6 +50,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('users')->group(function () {
         Route::get('/', [UsersController::class, 'index']);
         Route::get('porRfc/{rfc}', [UsersController::class, 'porRfc']);
+        Route::get('obtenerContenedores/{rfc}', [UsersController::class, 'obtenerContenedores']);
+        Route::get('obtenerEntradas/{rfc}', [UsersController::class, 'obtenerEntradas']);
+
         Route::post('logout', [AuthController::class, 'logout']);
         Route::post('saldo', [UsersController::class, 'getSaldo']);
         Route::post('admins', [UsersController::class, 'getAdmins']);

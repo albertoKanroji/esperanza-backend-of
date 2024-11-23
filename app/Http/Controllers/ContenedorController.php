@@ -13,11 +13,22 @@ use Illuminate\Support\Facades\Log; // Aquí la importación correcta de Log
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 
-
-
 class ContenedorController extends Controller
 {
-    
+    /**
+     * Método centralizado para realizar solicitudes HTTP desactivando la verificación SSL.
+     *
+     * @param string $url La URL a la que se enviará la solicitud.
+     * @param array $data Los datos que se enviarán en la solicitud.
+     * @return \Illuminate\Http\Client\Response La respuesta de la solicitud HTTP.
+     */
+    private function makeHttpRequest($url, $data)
+    {
+        return Http::withOptions([
+            'verify' => false // Desactiva la verificación SSL
+        ])->post($url, $data);
+    }
+
     public function update(Request $request, $folio)
     {
         try {
@@ -28,41 +39,41 @@ class ContenedorController extends Controller
                     'message' => 'You must be authenticated to view this resource.'
                 ], 401);
             }
-    
+
             // Validar la solicitud
             $validated = $request->validate([
                 '_pagado' => 'required|string', // Espera 'SI' o 'NO' en el request
             ]);
-    
+
             // Convertir $folio a string si es necesario
             $folio = (string) $folio;
-    
+
             // Asegúrate de buscar exactamente el contenedor por el folio
             $contenedor = Contenedor::where('folio', '=', $folio)->first(); // Uso de coincidencia exacta
-    
+
             if (!$contenedor) {
                 return response()->json(['message' => 'Contenedor no encontrado', 'folio' => $folio], 404);
             }
-    
+
             // Convertir 'SI' o 'NO' a 1 o 0, según sea necesario
             $estado = ($validated['_pagado'] === 'SI') ? 1 : 0;
-    
+
             // Actualizar el campo estado
             $contenedor->estado = $estado;
             $contenedor->save();
-    
-            // Enviar los datos a otro servidor
-            $response = Http::post('http://demo11.xrom.cc/nucleo/var/receive_data_update.php', [
+
+            // Enviar los datos a otro servidor usando el método centralizado
+            $response = $this->makeHttpRequest('https://esperanza.xromsys.com/nucleo/var/receive_data_update.php', [
                 'folio' => $folio,
                 '_pagado' => $validated['_pagado'],
             ]);
-    
+
             if ($response->successful()) {
                 return response()->json(['message' => 'Contenedor actualizado y datos enviados'], 200);
             } else {
                 return response()->json(['message' => 'Contenedor actualizado, pero error al enviar datos'], $response->status());
             }
-    
+
         } catch (ValidationException $e) {
             return response()->json(['message' => 'Error de validación', 'errors' => $e->errors()], 422);
         } catch (\Exception $e) {
@@ -80,56 +91,56 @@ class ContenedorController extends Controller
                     'message' => 'You must be authenticated to view this resource.'
                 ], 401);
             }
-    
+
             // Validar la solicitud
             $validated = $request->validate([
                 'id_salida' => 'required|string',
                 'estado' => 'required|string',
                 'f_salida' => 'required|string',
             ]);
-    
+
             // Convertir $folio a string si es necesario
             $folio = (string) $folio;
-    
+
             // Asegúrate de buscar exactamente el contenedor por el folio
             $contenedor = Contenedor::where('folio', $folio)->first(); // Uso de coincidencia exacta
-    
+
             if (!$contenedor) {
                 return response()->json([
                     'message' => 'Contenedor no encontrado',
                     'folio' => $folio
                 ], 404);
             }
-    
-            // Actualizar el campo estado
+
+            // Actualizar los campos correspondientes
             $contenedor->id_salida = $validated['id_salida'];
             $contenedor->estado = $validated['estado'];
             $contenedor->save();
-    
-            // Enviar los datos a otro servidor
-            $response = Http::post('http://demo11.xrom.cc/nucleo/var/receive_data_updateAddContenedor.php', [
+
+            // Enviar los datos a otro servidor usando el método centralizado
+            $response = $this->makeHttpRequest('https://esperanza.xromsys.com/nucleo/var/receive_data_updateAddContenedor.php', [
                 'folio' => $folio,
                 'id_salida' => $validated['id_salida'],
                 'estado' => $validated['estado'],
                 'f_salida' => $validated['f_salida'],
             ]);
-    
+
             if ($response->successful()) {
                 return response()->json(['message' => 'Contenedor actualizado y datos enviados'], 200);
             } else {
                 return response()->json(['message' => 'Contenedor actualizado, pero error al enviar datos'], $response->status());
             }
-    
+
         } catch (ValidationException $e) {
             return response()->json(['message' => 'Error de validación', 'errors' => $e->errors()], 422);
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Error interno del servidor', 
+                'message' => 'Error interno del servidor',
                 'error' => $e->getMessage()
             ], 500);
         }
     }
-    
+
     public function CerrarSalida(Request $request, $folio)
     {
         try {
@@ -140,55 +151,51 @@ class ContenedorController extends Controller
                     'message' => 'You must be authenticated to view this resource.'
                 ], 401);
             }
-    
+
             // Validar la solicitud
             $validated = $request->validate([
                 'estado' => 'required|string',
             ]);
-    
+
             // Convertir $folio a string si es necesario
             $folio = (string) $folio;
-    
+
             // Buscar exactamente el contenedor por el folio
             $contenedor = EntradaContenedores::where('folio', $folio)->first();
-    
+
             if (!$contenedor) {
                 return response()->json([
                     'message' => 'Contenedor no encontrado',
                     'folio' => $folio
                 ], 404);
             }
-    
+
             // Actualizar el campo estado
             $contenedor->estado = $validated['estado'];
             $contenedor->save();
-    
-            // Enviar los datos a otro servidor
-            $response = Http::post('http://demo11.xrom.cc/nucleo/var/receive_data_updateCerrarSalida.php', [
+
+            // Enviar los datos a otro servidor usando el método centralizado
+            $response = $this->makeHttpRequest('https://esperanza.xromsys.com/nucleo/var/receive_data_updateCerrarSalida.php', [
                 'folio' => $folio,
                 'estado' => $validated['estado'],
             ]);
-    
+
             if ($response->successful()) {
                 return response()->json(['message' => 'Contenedor actualizado y datos enviados'], 200);
             } else {
                 return response()->json(['message' => 'Contenedor actualizado, pero error al enviar datos'], $response->status());
             }
-    
+
         } catch (ValidationException $e) {
             return response()->json(['message' => 'Error de validación', 'errors' => $e->errors()], 422);
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Error interno del servidor', 
+                'message' => 'Error interno del servidor',
                 'error' => $e->getMessage()
             ], 500);
         }
     }
-    
-    
-    
-    
-    
+
     public function updateEntradasPagar(Request $request, $folio)
     {
         try {
@@ -199,60 +206,59 @@ class ContenedorController extends Controller
                     'message' => 'You must be authenticated to view this resource.'
                 ], 401);
             }
-    
+
             // Validar la solicitud
             $validated = $request->validate([
                 '_pagado' => 'required|string', // Espera 'SI' o 'NO' en el request
             ]);
-    
+
             // Convertir $folio a string si es necesario
             $folio = (string) $folio;
-    
+
             // Buscar el contenedor por id_ingreso o el campo que corresponda
             $contenedor = Contenedor::where('id_ingreso', $folio)->first(); // Asegúrate de que 'id_ingreso' es el campo correcto
-    
+
             if (!$contenedor) {
                 return response()->json(['message' => 'Contenedor no encontrado', 'folio' => $folio], 404);
             }
-    
-            // Convertir 1 o 0 en lugar de 'SI' o 'NO'
-            $estado = ($validated['_pagado'] == 1) ? 1 : 0;
 
-    
-            // Actualizar el campo estado
+            // Convertir 'SI' o 'NO' a 1 o 0
+            $estado = ($validated['_pagado'] === 'SI') ? 1 : 0;
+
+            // Actualizar el campo _pagado
             $contenedor->_pagado = $estado; // Asegúrate de actualizar el campo correcto
             $contenedor->save();
-    
-            // Enviar los datos a otro servidor (si es necesario)
-            $response = Http::post('http://demo11.xrom.cc/nucleo/var/receive_data_updateEntradasPagar.php', [
+
+            // Enviar los datos a otro servidor usando el método centralizado
+            $response = $this->makeHttpRequest('https://esperanza.xromsys.com/nucleo/var/receive_data_updateEntradasPagar.php', [
                 'folio' => $folio,
                 '_pagado' => $validated['_pagado'],
             ]);
-    
+
             if ($response->successful()) {
                 return response()->json(['message' => 'Contenedor actualizado y datos enviados'], 200);
             } else {
                 return response()->json(['message' => 'Contenedor actualizado, pero error al enviar datos'], $response->status());
             }
-    
+
         } catch (ValidationException $e) {
             return response()->json(['message' => 'Error de validación', 'errors' => $e->errors()], 422);
         } catch (\Exception $e) {
             return response()->json(['message' => 'Error interno del servidor', 'error' => $e->getMessage()], 500);
         }
     }
-    
+
     public function updateContenedorStatus(Request $request, $folio)
     {
         try {
+            // Verificar si el usuario está autenticado
+            if (!Auth::check()) {
+                return response()->json([
+                    'error' => 'Unauthorized',
+                    'message' => 'You must be authenticated to view this resource.'
+                ], 401);
+            }
 
-                        // Verificar si el usuario está autenticado
-                        if (!Auth::check()) {
-                            return response()->json([
-                                'error' => 'Unauthorized',
-                                'message' => 'You must be authenticated to view this resource.'
-                            ], 401);
-                        }
             // Validar la solicitud
             $validated = $request->validate([
                 'status' => 'required|string',
@@ -267,11 +273,11 @@ class ContenedorController extends Controller
                 return response()->json(['message' => 'Contenedor no encontrado'], 404);
             }
 
-            // Actualizar el campo _pagado
+            // Actualizar el campo status
             $contenedor->status = $validated['status'];
 
-            // Enviar los datos a otro servidor
-            $response = Http::post('http://demo11.xrom.cc/nucleo/var/receive_data_updateContenedorStatus.php', [
+            // Enviar los datos a otro servidor usando el método centralizado
+            $response = $this->makeHttpRequest('https://esperanza.xromsys.com/nucleo/var/receive_data_updateContenedorStatus.php', [
                 'folio' => $folio,
                 'status' => $validated['status'],
                 // Agrega otros campos si es necesario
@@ -282,11 +288,10 @@ class ContenedorController extends Controller
             } else {
                 return response()->json([
                     'message' => 'Contenedor actualizado, pero error al enviar datos',
-                    'response_body' => $response->body(), // Include the response body
-                    'response_status' => $response->status() // Include the status code
+                    'response_body' => $response->body(), // Incluye el cuerpo de la respuesta
+                    'response_status' => $response->status() // Incluye el código de estado
                 ], $response->status());
             }
-            
 
         } catch (ValidationException $e) {
             // Manejar errores de validación
@@ -302,10 +307,10 @@ class ContenedorController extends Controller
         try {
             // Validar la solicitud
             $validated = $request->validate([
-                'fecha_i' => 'required|date', 
-                'hora_i' => 'required|date_format:H:i', 
-                'fecha_s' => 'required|date', 
-                'hora_s' => 'required|date_format:H:i', 
+                'fecha_i' => 'required|date',
+                'hora_i' => 'required|date_format:H:i',
+                'fecha_s' => 'required|date',
+                'hora_s' => 'required|date_format:H:i',
                 'id_cliente' => 'required|integer',
                 'id_transportista' => 'required|integer',
                 'placas' => 'required|string',
@@ -317,20 +322,20 @@ class ContenedorController extends Controller
                 'estado' => 'required|string',
                 'tipo' => 'required|string'
             ]);
-    
+
             // Guardar los datos usando el modelo EntradaContenedores
             $entrada = EntradaContenedores::create($validated);
-    
-            // Enviar los datos a la API externa en PHP
-            $response = Http::post('http://demo11.xrom.cc/nucleo/var/receive_data_createEntrada.php', $validated);
-    
+
+            // Enviar los datos a la API externa en PHP usando el método centralizado
+            $response = $this->makeHttpRequest('https://esperanza.xromsys.com/nucleo/var/receive_data_createEntrada.php', $validated);
+
             // Verificar si la API respondió exitosamente
             if ($response->successful()) {
                 return response()->json(['message' => 'Entrada creada y datos enviados'], 201);
             } else {
                 return response()->json(['message' => 'Entrada creada, pero error al enviar datos', 'response_body' => $response->body()], $response->status());
             }
-    
+
         } catch (ValidationException $e) {
             return response()->json(['message' => 'Error de validación', 'errors' => $e->errors()], 422);
         } catch (\Exception $e) {
@@ -343,35 +348,34 @@ class ContenedorController extends Controller
         try {
             // Validar la solicitud
             $validated = $request->validate([
-                'no_contenedor' => 'required|string', 
+                'no_contenedor' => 'required|string',
                 'sello' => 'required|string',
-                'ct' => 'required|string', 
-                'estado' => 'required|string', 
-                'pedimento' => 'required|string', 
+                'ct' => 'required|string',
+                'estado' => 'required|string',
+                'pedimento' => 'required|string',
                 'tipo_contenedor' => 'required|string',
                 'id_cliente' => 'required|string',
                 'id_ingreso' => 'required|string',
                 'f_ingreso' => 'required|string',
             ]);
-    
-            // Guardar los datos usando el modelo EntradaContenedores
+
+            // Guardar los datos usando el modelo createContenedores
             $entrada = createContenedores::create($validated);
-    
-            // Enviar los datos a la API externa en PHP
-            $response = Http::post('http://demo11.xrom.cc/nucleo/var/receive_data_createContenedores.php', $validated);
-    
+
+            // Enviar los datos a la API externa en PHP usando el método centralizado
+            $response = $this->makeHttpRequest('https://esperanza.xromsys.com/nucleo/var/receive_data_createContenedores.php', $validated);
+
             // Verificar si la API respondió exitosamente
             if ($response->successful()) {
                 return response()->json(['message' => 'Contenedor creada y datos enviados'], 201);
             } else {
                 return response()->json(['message' => 'Contenedor creada, pero error al enviar datos', 'response_body' => $response->body()], $response->status());
             }
-    
+
         } catch (ValidationException $e) {
             return response()->json(['message' => 'Error de validación', 'errors' => $e->errors()], 422);
         } catch (\Exception $e) {
             return response()->json(['message' => 'Error interno del servidor', 'error' => $e->getMessage()], 500);
         }
     }
-
 }
