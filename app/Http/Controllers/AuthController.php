@@ -15,7 +15,7 @@ class AuthController extends Controller
     public function register(Request $request)
     {
         try {
-            // Validate the request
+            // Validar la solicitud
             $request->validate([
                 'name' => 'required|string|max:255',
                 'email' => 'required|string|email|max:255|unique:users',
@@ -23,7 +23,6 @@ class AuthController extends Controller
                 'rfc' => 'required|string|max:255',
             ]);
 
-            // Create the user
             $user = User::create([
                 'name' => $request->name,
                 'email' => $request->email,
@@ -31,28 +30,25 @@ class AuthController extends Controller
                 'rfc' => $request->rfc
             ]);
 
-            // Generate the token
+            // Generar el token
             $token = $user->createToken('auth_token')->plainTextToken;
 
-            // Return the response with the token
             return response()->json([
                 'access_token' => $token,
                 'token_type' => 'Bearer',
             ]);
         } catch (ValidationException $e) {
-            // Handle validation errors
             return response()->json([
                 'error' => 'Validation Error',
                 'message' => $e->errors(),
             ], 422);
         } catch (QueryException $e) {
-            // Handle database errors
+            // Manejar errores de base de datos
             return response()->json([
                 'error' => 'Database Error',
                 'message' => 'An error occurred while saving the user.',
             ], 500);
         } catch (\Exception $e) {
-            // Handle other errors
             return response()->json([
                 'error' => 'Server Error',
                 'message' => 'An unexpected error occurred.',
