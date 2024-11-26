@@ -221,6 +221,234 @@ class UsersController extends Controller
         }
     }
 
+    public function obtenerContenedoresPorEntrada(Request $request, $rfc)
+    {
+        try {
+            if (!Auth::check()) {
+                return response()->json([
+                    'error' => 'Unauthorized',
+                    'message' => 'You must be authenticated to view this resource.'
+                ], 401);
+            }
+    
+            $folio = $request->query('folio');
+    
+            if (empty($folio) || empty($rfc)) {
+                return response()->json([
+                    'error' => 'Bad Request',
+                    'message' => 'Se requieren tanto clienteId como RFC para recuperar los contenedores.'
+                ], 400);
+            }
+    
+            $response = $this->makeHttpRequest('https://esperanza.xromsys.com/nucleo/var/consultasDev.php', [
+                'rfc' => $rfc,
+                'opcion' => 4,
+                'folioEntrada' => $folio,
+            ]);
+    
+            if (empty($response)) {
+                return response()->json([
+                    'error' => 'No Response',
+                    'message' => 'The external service did not return any response.'
+                ], 500);
+            }
+    
+            Log::info('Respuesta del servicio externo:', ['response' => $response]);
+    
+            $data = json_decode($response, true);
+    
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                return response()->json([
+                    'error' => 'Invalid Response',
+                    'message' => 'The external service returned invalid JSON.',
+                    'raw_response' => $response,
+                    'json_error' => json_last_error_msg()
+                ], 500);
+            }
+    
+            if (!isset($data['registros'])) {
+                return response()->json([
+                    'error' => 'No Data',
+                    'message' => 'No se encontraron contenedores para los criterios proporcionados.'
+                ], 404);
+            }
+    
+            return response()->json([
+                'status' => $data['status'],
+                'total' => $data['total'],
+                'n_page' => $data['n_page'],
+                'paginado' => $data['paginado'],
+                'registros' => $data['registros'],
+            ], 200);
+    
+        } catch (QueryException $e) {
+            Log::error('Error en la consulta de base de datos:', ['exception' => $e]);
+            return response()->json([
+                'error' => 'Database Error',
+                'message' => 'An error occurred while retrieving the data.'
+            ], 500);
+        } catch (\Exception $e) {
+            Log::error('Error en el servidor:', ['exception' => $e]);
+            return response()->json([
+                'error' => 'Server Error',
+                'message' => 'An unexpected error occurred.',
+                'details' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function obtenerContenedoresPorSalida(Request $request, $rfc)
+    {
+        try {
+            if (!Auth::check()) {
+                return response()->json([
+                    'error' => 'Unauthorized',
+                    'message' => 'You must be authenticated to view this resource.'
+                ], 401);
+            }
+    
+            $folio = $request->query('folio');
+    
+            if (empty($folio) || empty($rfc)) {
+                return response()->json([
+                    'error' => 'Bad Request',
+                    'message' => 'Se requieren tanto clienteId como RFC para recuperar los contenedores.'
+                ], 400);
+            }
+    
+            $response = $this->makeHttpRequest('https://esperanza.xromsys.com/nucleo/var/consultasDev.php', [
+                'rfc' => $rfc,
+                'opcion' => 5,
+                'folioSalida' => $folio,
+            ]);
+    
+            if (empty($response)) {
+                return response()->json([
+                    'error' => 'No Response',
+                    'message' => 'The external service did not return any response.'
+                ], 500);
+            }
+    
+            Log::info('Respuesta del servicio externo:', ['response' => $response]);
+    
+            $data = json_decode($response, true);
+    
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                return response()->json([
+                    'error' => 'Invalid Response',
+                    'message' => 'The external service returned invalid JSON.',
+                    'raw_response' => $response,
+                    'json_error' => json_last_error_msg()
+                ], 500);
+            }
+    
+            if (!isset($data['registros'])) {
+                return response()->json([
+                    'error' => 'No Data',
+                    'message' => 'No se encontraron contenedores para los criterios proporcionados.'
+                ], 404);
+            }
+    
+            return response()->json([
+                'status' => $data['status'],
+                'total' => $data['total'],
+                'n_page' => $data['n_page'],
+                'paginado' => $data['paginado'],
+                'registros' => $data['registros'],
+            ], 200);
+    
+        } catch (QueryException $e) {
+            Log::error('Error en la consulta de base de datos:', ['exception' => $e]);
+            return response()->json([
+                'error' => 'Database Error',
+                'message' => 'An error occurred while retrieving the data.'
+            ], 500);
+        } catch (\Exception $e) {
+            Log::error('Error en el servidor:', ['exception' => $e]);
+            return response()->json([
+                'error' => 'Server Error',
+                'message' => 'An unexpected error occurred.',
+                'details' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function obtenerContenedoresPorTraspaleo(Request $request, $rfc)
+    {
+        try {
+            if (!Auth::check()) {
+                return response()->json([
+                    'error' => 'Unauthorized',
+                    'message' => 'You must be authenticated to view this resource.'
+                ], 401);
+            }
+    
+            $folio = $request->query('folio');
+    
+            if (empty($folio) || empty($rfc)) {
+                return response()->json([
+                    'error' => 'Bad Request',
+                    'message' => 'Se requieren tanto clienteId como RFC para recuperar los contenedores.'
+                ], 400);
+            }
+    
+            $response = $this->makeHttpRequest('https://esperanza.xromsys.com/nucleo/var/consultasDev.php', [
+                'rfc' => $rfc,
+                'opcion' => 7,
+                'folioTrasoaleo' => $folio,
+            ]);
+    
+            if (empty($response)) {
+                return response()->json([
+                    'error' => 'No Response',
+                    'message' => 'The external service did not return any response.'
+                ], 500);
+            }
+    
+            Log::info('Respuesta del servicio externo:', ['response' => $response]);
+    
+            $data = json_decode($response, true);
+    
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                return response()->json([
+                    'error' => 'Invalid Response',
+                    'message' => 'The external service returned invalid JSON.',
+                    'raw_response' => $response,
+                    'json_error' => json_last_error_msg()
+                ], 500);
+            }
+    
+            if (!isset($data['registros'])) {
+                return response()->json([
+                    'error' => 'No Data',
+                    'message' => 'No se encontraron contenedores para los criterios proporcionados.'
+                ], 404);
+            }
+    
+            return response()->json([
+                'status' => $data['status'],
+                'total' => $data['total'],
+                'n_page' => $data['n_page'],
+                'paginado' => $data['paginado'],
+                'registros' => $data['registros'],
+            ], 200);
+    
+        } catch (QueryException $e) {
+            Log::error('Error en la consulta de base de datos:', ['exception' => $e]);
+            return response()->json([
+                'error' => 'Database Error',
+                'message' => 'An error occurred while retrieving the data.'
+            ], 500);
+        } catch (\Exception $e) {
+            Log::error('Error en el servidor:', ['exception' => $e]);
+            return response()->json([
+                'error' => 'Server Error',
+                'message' => 'An unexpected error occurred.',
+                'details' => $e->getMessage()
+            ], 500);
+        }
+    }
+
     public function obtenerEntradas(Request $request, $rfc)
     {
         try {
@@ -245,6 +473,172 @@ class UsersController extends Controller
             $payload = [
                 'rfc' => $rfc,
                 'opcion' => 2,
+            ];
+    
+            // Realizar solicitud HTTP al servicio externo
+            $response = $this->makeHttpRequest('https://esperanza.xromsys.com/nucleo/var/consultasDev.php', $payload);
+    
+            // Verificar respuesta del servicio externo
+            if (empty($response)) {
+                return response()->json([
+                    'error' => 'No Response',
+                    'message' => 'The external service did not return any response.'
+                ], 500);
+            }
+    
+            Log::info('Respuesta del servicio externo:', ['response' => $response]);
+    
+            // Decodificar respuesta JSON
+            $data = json_decode($response, true);
+    
+            // Validar formato de JSON
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                return response()->json([
+                    'error' => 'Invalid Response',
+                    'message' => 'The external service returned invalid JSON.',
+                    'raw_response' => $response,
+                    'json_error' => json_last_error_msg()
+                ], 500);
+            }
+    
+            // Validar datos de respuesta
+            if (!isset($data['data']) || empty($data['data'])) {
+                return response()->json([
+                    'error' => 'No Data',
+                    'message' => 'No se encontraron contenedores para los criterios proporcionados.'
+                ], 404);
+            }
+    
+            // Retornar datos exitosos
+            return response()->json([
+                'registros' => $data['data'],
+            ], 200);
+    
+        } catch (QueryException $e) {
+            // Manejo de errores de base de datos
+            Log::error('Error en la consulta de base de datos:', ['exception' => $e]);
+            return response()->json([
+                'error' => 'Database Error',
+                'message' => 'An error occurred while retrieving the data.'
+            ], 500);
+        } catch (\Exception $e) {
+            // Manejo de otros errores
+            Log::error('Error en el servidor:', ['exception' => $e]);
+            return response()->json([
+                'error' => 'Server Error',
+                'message' => 'An unexpected error occurred.',
+                'details' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function obtenerSalidas(Request $request, $rfc)
+    {
+        try {
+            // Verificar autenticación del usuario
+            if (!Auth::check()) {
+                return response()->json([
+                    'error' => 'Unauthorized',
+                    'message' => 'You must be authenticated to view this resource.'
+                ], 401);
+            }
+    
+            // Validar clienteId y RFC
+            $clienteId = $request->query('clientes_id');
+            if (empty($clienteId) || empty($rfc)) {
+                return response()->json([
+                    'error' => 'Bad Request',
+                    'message' => 'Se requieren tanto clienteId como RFC para recuperar los contenedores.'
+                ], 400);
+            }
+    
+            // Preparar datos para la solicitud al servicio externo
+            $payload = [
+                'rfc' => $rfc,
+                'opcion' => 3,
+            ];
+    
+            // Realizar solicitud HTTP al servicio externo
+            $response = $this->makeHttpRequest('https://esperanza.xromsys.com/nucleo/var/consultasDev.php', $payload);
+    
+            // Verificar respuesta del servicio externo
+            if (empty($response)) {
+                return response()->json([
+                    'error' => 'No Response',
+                    'message' => 'The external service did not return any response.'
+                ], 500);
+            }
+    
+            Log::info('Respuesta del servicio externo:', ['response' => $response]);
+    
+            // Decodificar respuesta JSON
+            $data = json_decode($response, true);
+    
+            // Validar formato de JSON
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                return response()->json([
+                    'error' => 'Invalid Response',
+                    'message' => 'The external service returned invalid JSON.',
+                    'raw_response' => $response,
+                    'json_error' => json_last_error_msg()
+                ], 500);
+            }
+    
+            // Validar datos de respuesta
+            if (!isset($data['data']) || empty($data['data'])) {
+                return response()->json([
+                    'error' => 'No Data',
+                    'message' => 'No se encontraron contenedores para los criterios proporcionados.'
+                ], 404);
+            }
+    
+            // Retornar datos exitosos
+            return response()->json([
+                'registros' => $data['data'],
+            ], 200);
+    
+        } catch (QueryException $e) {
+            // Manejo de errores de base de datos
+            Log::error('Error en la consulta de base de datos:', ['exception' => $e]);
+            return response()->json([
+                'error' => 'Database Error',
+                'message' => 'An error occurred while retrieving the data.'
+            ], 500);
+        } catch (\Exception $e) {
+            // Manejo de otros errores
+            Log::error('Error en el servidor:', ['exception' => $e]);
+            return response()->json([
+                'error' => 'Server Error',
+                'message' => 'An unexpected error occurred.',
+                'details' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function obtenerTraspaleos(Request $request, $rfc)
+    {
+        try {
+            // Verificar autenticación del usuario
+            if (!Auth::check()) {
+                return response()->json([
+                    'error' => 'Unauthorized',
+                    'message' => 'You must be authenticated to view this resource.'
+                ], 401);
+            }
+    
+            // Validar clienteId y RFC
+            $clienteId = $request->query('clientes_id');
+            if (empty($clienteId) || empty($rfc)) {
+                return response()->json([
+                    'error' => 'Bad Request',
+                    'message' => 'Se requieren tanto clienteId como RFC para recuperar los contenedores.'
+                ], 400);
+            }
+    
+            // Preparar datos para la solicitud al servicio externo
+            $payload = [
+                'rfc' => $rfc,
+                'opcion' => 6,
             ];
     
             // Realizar solicitud HTTP al servicio externo
