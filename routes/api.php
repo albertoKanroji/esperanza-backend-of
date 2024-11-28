@@ -57,6 +57,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
         Route::get('obtenerSalidas/{rfc}', [UsersController::class, 'obtenerSalidas']);
         Route::get('obtenerContenedoresPorSalida/{rfc}', [UsersController::class, 'obtenerContenedoresPorSalida']);
+        Route::get('obtenerContenedoresPorSalidaAbierta/{rfc}', [UsersController::class, 'obtenerContenedoresPorSalidaAbierta']);
+
 
         Route::get('obtenerTraspaleos/{rfc}', [UsersController::class, 'obtenerTraspaleos']);
         Route::get('obtenerContenedoresPorTraspaleo/{rfc}', [UsersController::class, 'obtenerContenedoresPorTraspaleo']);
