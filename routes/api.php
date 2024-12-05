@@ -49,6 +49,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Rutas relacionadas con usuarios
     Route::prefix('users')->group(function () {
         Route::get('/', [UsersController::class, 'index']);
+        Route::get('getDebtsUsers', [UsersController::class, 'getDebtsUsers']);
         Route::get('porRfc/{rfc}', [UsersController::class, 'porRfc']);
         Route::get('obtenerContenedores/{rfc}', [UsersController::class, 'obtenerContenedores']);
 

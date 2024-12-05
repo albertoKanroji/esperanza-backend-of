@@ -863,6 +863,59 @@ class UsersController extends Controller
             ], 500);
         }
     }
+
+    public function getDebtsUsers()
+    {
+        try {
+            // Verificar si el usuario está autenticado
+            if (!Auth::check()) {
+                return response()->json([
+                    'error' => 'Unauthorized',
+                    'message' => 'You must be authenticated to view this resource.'
+                ], 401);
+            }
+    
+            $payload = [
+                'opcion' => 9,
+                'page' => 0, // Puedes cambiarlo según sea necesario
+                'n_page' => 30 // Puedes cambiarlo según sea necesario
+            ];
+    
+            $response = $this->makeHttpRequest('https://esperanza.xromsys.com/nucleo/var/consultasDev.php', $payload);
+    
+            if (empty($response)) {
+                return response()->json([
+                    'error' => 'No Response',
+                    'message' => 'The external service did not return any response.'
+                ], 500);
+            }
+    
+            $data = json_decode($response, true);
+    
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                return response()->json([
+                    'error' => 'Invalid Response',
+                    'message' => 'The external service returned invalid JSON.',
+                    'raw_response' => $response,
+                    'json_error' => json_last_error_msg()
+                ], 500);
+            }
+    
+            return response()->json($data, 200);
+        } catch (QueryException $e) {
+            return response()->json([
+                'error' => 'Database Error',
+                'message' => 'An error occurred while retrieving the users.'
+            ], 500);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Server Error',
+                'message' => 'An unexpected error occurred.'
+            ], 500);
+        }
+    }
+    
+
     public function getSaldo(Request $request)
     {
         try {
