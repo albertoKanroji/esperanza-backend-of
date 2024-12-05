@@ -928,8 +928,35 @@ class UsersController extends Controller
     // Función para obtener usuarios con perfil SUPPORT
     public function getSupports()
     {
-        return $this->getUsersByProfile('SUPPORT');
+        return $this->getUsersByProfiles(['SUPPORT', 'ADMIN']);
     }
+
+    private function getUsersByProfiles(array $profiles)
+{
+    try {
+        if (!Auth::check()) {
+            return response()->json([
+                'error' => 'Unauthorized',
+                'message' => 'You must be authenticated to view this resource.'
+            ], 401);
+        }
+
+        $users = User::whereIn('profile', $profiles)->get();
+
+        return response()->json($users);
+    } catch (QueryException $e) {
+        return response()->json([
+            'error' => 'Database Error',
+            'message' => 'An error occurred while retrieving the users.'
+        ], 500);
+    } catch (\Exception $e) {
+        return response()->json([
+            'error' => 'Server Error',
+            'message' => 'An unexpected error occurred.'
+        ], 500);
+    }
+}
+
 
     // Función general para obtener usuarios por perfil
     private function getUsersByProfile($profile)
