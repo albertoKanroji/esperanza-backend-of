@@ -5,12 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class EntradaContenedores extends Model
+class EntradaContenedoresS extends Model
 {
     use HasFactory;
 
     // Especifica la conexión que utilizará este modelo
-    //protected $connection = 'mysql_second';
+    protected $connection = 'mysql_second';
 
     // Especifica el nombre de la tabla si no sigue la convención plural
     protected $table = 'patio_ingreso';

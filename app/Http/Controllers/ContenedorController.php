@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use App\Models\Contenedor;
 use App\Models\EntradaContenedores;
+use App\Models\EntradaContenedoresS;
 use App\Models\createContenedores;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Log; // Aquí la importación correcta de Log
@@ -27,13 +28,6 @@ class ContenedorController extends Controller
         return Http::withOptions([
             'verify' => false // Desactiva la verificación SSL
         ])->post($url, $data);
-    }
-
-    private function makeHttpRequest2($url, $data)
-    {
-        return Http::withOptions([
-            'verify' => false // Desactiva la verificación SSL
-        ])->put($url, $data);
     }
 
     public function update(Request $request, $folio)
@@ -168,7 +162,7 @@ class ContenedorController extends Controller
             $folio = (string) $folio;
     
             // Buscar exactamente el contenedor por el folio
-            $contenedor = EntradaContenedores::where('folio', $folio)->first();
+            $contenedor = EntradaContenedoresS::where('folio', $folio)->first();
     
             if (!$contenedor) {
                 return response()->json([
@@ -339,7 +333,7 @@ class ContenedorController extends Controller
             ]);
 
             // Guardar los datos usando el modelo EntradaContenedores
-            $entrada = EntradaContenedores::create($validated);
+            //$response = EntradaContenedores::create($validated);
 
             // Enviar los datos a la API externa en PHP usando el método centralizado
             $response = $this->makeHttpRequest('https://esperanza.xromsys.com/nucleo/var/receive_data_createEntrada.php', $validated);
