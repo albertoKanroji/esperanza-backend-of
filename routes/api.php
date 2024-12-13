@@ -99,9 +99,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Rutas para PaymentHistory
     Route::prefix('payment-history')->group(function () {
-        Route::post('/', [MessageController::class, 'index']); // Obtener todos los pagos
-        Route::post('create', [MessageController::class, 'store']); // Crear un nuevo registro de pago
-        Route::post('obtenerPago', [MessageController::class, 'show']); // Obtener un pago específico
+        Route::post('/', [PaymentHistoryController::class, 'index']); // Obtener todos los pagos
+        Route::post('create', [PaymentHistoryController::class, 'store']); // Crear un nuevo registro de pago
+        Route::post('obtenerPago', [PaymentHistoryController::class, 'show']); // Obtener un pago específico
         //Route::post('actualizar', [MessageController::class, 'update']); // Actualizar un pago
         //Route::post('eliminar', [MessageController::class, 'update']); // Eliminar un pago
     });
