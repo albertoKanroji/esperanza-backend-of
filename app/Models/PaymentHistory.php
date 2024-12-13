@@ -15,7 +15,7 @@ class PaymentHistory extends Model
 
     // Columnas que se pueden asignar masivamente
     protected $fillable = [
-        'user_id',
+        'users_id',
         'description',
         'payment_date',
         'amount',
@@ -23,7 +23,7 @@ class PaymentHistory extends Model
         'transaction_status',
         'encrypted_card_details',
         'container_name'
-    ];
+    ];    
 
     // Atributos ocultos para serialización
     protected $hidden = [
@@ -45,6 +45,7 @@ class PaymentHistory extends Model
     // Relación con el modelo User
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'users_id');
     }
+    
 }
