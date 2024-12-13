@@ -101,7 +101,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('payment-history')->group(function () {
         Route::get('/', [PaymentHistoryController::class, 'index']); // Obtener todos los pagos
         Route::post('create', [PaymentHistoryController::class, 'store']); // Crear un nuevo registro de pago
-        Route::get('/{userId}', [PaymentHistoryController::class, 'show']); // Obtener los pagos de un usuario específico
+        Route::get('obtenerHistorial/{userId}', [PaymentHistoryController::class, 'show']); // Obtener los pagos de un usuario específico
     });
     
 
