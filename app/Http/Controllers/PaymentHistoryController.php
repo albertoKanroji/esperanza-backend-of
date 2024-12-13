@@ -49,6 +49,7 @@ class PaymentHistoryController extends Controller
 
             $validator = Validator::make($request->all(), [
                 'user_id' => 'required|exists:users,id',
+                'description' => 'required|string',
                 'payment_date' => 'required|date',
                 'amount' => 'required|numeric|min:0',
                 'payment_method' => 'required|in:credit_card,debit_card,paypal,bank_transfer',

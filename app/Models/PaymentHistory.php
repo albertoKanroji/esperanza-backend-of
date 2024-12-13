@@ -16,6 +16,7 @@ class PaymentHistory extends Model
     // Columnas que se pueden asignar masivamente
     protected $fillable = [
         'user_id',
+        'description',
         'payment_date',
         'amount',
         'payment_method',
