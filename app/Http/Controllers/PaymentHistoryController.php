@@ -79,7 +79,7 @@ class PaymentHistoryController extends Controller
     public function show($userId)
     {
         try {
-            $payments = PaymentHistory::with('user')->where('id', $userId)->get();
+            $payments = PaymentHistory::with('user')->where('users_id', $userId)->get();
 
             if ($payments->isEmpty()) {
                 return response()->json(['error' => 'No payments found for this user'], 404);
