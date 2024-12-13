@@ -30,30 +30,25 @@ class PaymentHistoryController extends Controller
         }
     }
 
-    // Crear un nuevo registro de pago
     public function store(Request $request)
     {
         try {
             $validator = Validator::make($request->all(), [
                 'users_id' => 'required|exists:users,id',
                 'description' => 'required|string|max:512',
-                'payment_date' => 'required|date',
+                'payment_date' => 'required|date_format:Y-m-d H:i:s', // Validación para formato correcto
                 'amount' => 'required|numeric|min:0',
                 'payment_method' => 'required|in:credit_card,debit_card,paypal,bank_transfer',
                 'transaction_status' => 'required|in:pending,completed,failed',
-                'encrypted_card_details' => 'required|string',
-                'container_name' => 'required|string|max:255',
-            ], [
-                'description.required' => 'El campo descripción es obligatorio.',
-                'description.max' => 'La descripción no puede exceder los 512 caracteres.',
-                'container_name.required' => 'El nombre del contenedor es obligatorio.',
-                'container_name.max' => 'El nombre del contenedor no puede exceder los 255 caracteres.',
+                'encrypted_card_details' => 'required|string|max:255',
+                'container_name' => 'required|string|max:100',
             ]);
-
+    
             if ($validator->fails()) {
+                Log::error('Validation error: ', $validator->errors()->toArray());
                 return response()->json(['error' => $validator->errors()], 422);
             }
-
+    
             $payment = PaymentHistory::create($request->only([
                 'users_id',
                 'description',
@@ -64,16 +59,21 @@ class PaymentHistoryController extends Controller
                 'encrypted_card_details',
                 'container_name'
             ]));
-
+    
             return response()->json(['message' => 'Payment created successfully', 'data' => $payment], 201);
         } catch (\Exception $e) {
-            Log::error('Error creating payment: ' . $e->getMessage());
+            Log::error('Error creating payment: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'input_data' => $request->all()
+            ]);
+    
             return response()->json([
                 'error' => 'Server Error',
                 'message' => 'An unexpected error occurred while creating the payment.'
             ], 500);
         }
     }
+    
 
     // Obtener los pagos de un usuario específico
     public function show($userId)
