@@ -5,8 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\PaymentHistory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
 
 class PaymentHistoryController extends Controller
 {
@@ -20,11 +20,9 @@ class PaymentHistoryController extends Controller
     {
         try {
             $payments = PaymentHistory::with('user')->get();
-
             return response()->json($payments, 200);
         } catch (\Exception $e) {
             Log::error('Error fetching payment history: ' . $e->getMessage());
-
             return response()->json([
                 'error' => 'Server Error',
                 'message' => 'An unexpected error occurred while fetching the payment history.'
@@ -36,14 +34,6 @@ class PaymentHistoryController extends Controller
     public function store(Request $request)
     {
         try {
-            // Verificar si el usuario está autenticado
-            if (!Auth::check()) {
-                return response()->json([
-                    'error' => 'Unauthorized',
-                    'message' => 'You must be authenticated to view this resource.'
-                ], 401);
-            }
-
             $validator = Validator::make($request->all(), [
                 'users_id' => 'required|exists:users,id',
                 'description' => 'required|string|max:512',
@@ -78,7 +68,6 @@ class PaymentHistoryController extends Controller
             return response()->json(['message' => 'Payment created successfully', 'data' => $payment], 201);
         } catch (\Exception $e) {
             Log::error('Error creating payment: ' . $e->getMessage());
-
             return response()->json([
                 'error' => 'Server Error',
                 'message' => 'An unexpected error occurred while creating the payment.'
@@ -99,7 +88,6 @@ class PaymentHistoryController extends Controller
             return response()->json($payments, 200);
         } catch (\Exception $e) {
             Log::error('Error fetching payments for user ' . $userId . ': ' . $e->getMessage());
-
             return response()->json([
                 'error' => 'Server Error',
                 'message' => 'An unexpected error occurred while fetching the user payments.'
