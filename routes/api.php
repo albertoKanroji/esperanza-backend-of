@@ -10,13 +10,11 @@ use App\Http\Controllers\ProductsController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\SalidasController;
 use App\Http\Controllers\ContenedorController;
-
+use App\Http\Controllers\PaymentHistoryController;
 use App\Http\Controllers\ProfilePhotoController;
-
 use App\Models\Chat;
 use App\Models\Message;
 use App\Events\MessageSent;
-
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\MessageController;
 
@@ -97,6 +95,15 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/createContenedores', [ContenedorController::class, 'createContenedoresS']);
 
         route::get('/info/{id}', [UsersController::class, 'getInfoUser']);
+    });
+
+    // Rutas para PaymentHistory
+    Route::prefix('payment-history')->group(function () {
+        Route::post('/', [MessageController::class, 'index']); // Obtener todos los pagos
+        Route::post('create', [MessageController::class, 'store']); // Crear un nuevo registro de pago
+        Route::post('obtenerPago', [MessageController::class, 'show']); // Obtener un pago específico
+        //Route::post('actualizar', [MessageController::class, 'update']); // Actualizar un pago
+        //Route::post('eliminar', [MessageController::class, 'update']); // Eliminar un pago
     });
 
     Route::prefix('chats')->group(function () {
