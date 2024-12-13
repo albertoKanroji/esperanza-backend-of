@@ -6,6 +6,7 @@ use App\Models\PaymentHistory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Auth;
 
 class PaymentHistoryController extends Controller
 {
@@ -42,7 +43,7 @@ class PaymentHistoryController extends Controller
                     'message' => 'You must be authenticated to view this resource.'
                 ], 401);
             }
-            
+
             $validator = Validator::make($request->all(), [
                 'users_id' => 'required|exists:users,id',
                 'description' => 'required|string|max:512',
