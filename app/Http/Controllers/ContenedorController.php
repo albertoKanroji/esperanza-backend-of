@@ -368,20 +368,20 @@ class ContenedorController extends Controller
                 'f_ingreso' => 'required|string',
             ]);
     
-            // Guardar los datos usando el modelo createContenedores
-            $entrada = createContenedores::create($validated);
-    
-            // Convertir el modelo a un array antes de enviarlo
+            // Enviar los datos a la API externa en PHP usando el método centralizado
             $response = $this->makeHttpRequest(
                 'https://esperanza.xromsys.com/nucleo/var/receive_data_createContenedores.php',
-                $entrada->toArray()
+                $validated
             );
     
             // Verificar si la API respondió exitosamente
             if ($response->successful()) {
                 return response()->json(['message' => 'Contenedor creado y datos enviados'], 201);
             } else {
-                return response()->json(['message' => 'Contenedor creado, pero error al enviar datos', 'response_body' => $response->body()], $response->status());
+                return response()->json([
+                    'message' => 'Contenedor creado, pero error al enviar datos',
+                    'response_body' => $response->body()
+                ], $response->status());
             }
         } catch (ValidationException $e) {
             return response()->json(['message' => 'Error de validación', 'errors' => $e->errors()], 422);
