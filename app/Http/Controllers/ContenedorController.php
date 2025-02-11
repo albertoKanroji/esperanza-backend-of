@@ -25,6 +25,13 @@ class ContenedorController extends Controller
             ->put($url, $data);
     }
 
+    private function makeHttpRequest2(string $url, array $data)
+    {
+        return Http::withOptions(['verify' => false])
+            ->withHeaders(['Content-Type' => 'application/json'])
+            ->post($url, $data);
+    }
+
     /**
      * Actualiza el contenedor y envía la información a la API externa.
      */
@@ -248,7 +255,7 @@ class ContenedorController extends Controller
                 'tipo'          => 'required|string'
             ]);
 
-            $response = $this->makeHttpRequest('https://esperanza.xromsys.com/nucleo/var/receive_data_createEntrada.php', $validated);
+            $response = $this->makeHttpRequest2('https://esperanza.xromsys.com/nucleo/var/receive_data_createEntrada.php', $validated);
 
             if ($response->successful()) {
                 return response()->json(['message' => 'Entrada creada y datos enviados'], 201);
@@ -285,7 +292,7 @@ class ContenedorController extends Controller
                 'f_ingreso'      => 'required|string',
             ]);
 
-            $response = $this->makeHttpRequest('https://esperanza.xromsys.com/nucleo/var/receive_data_createContenedores.php', $validated);
+            $response = $this->makeHttpRequest2('https://esperanza.xromsys.com/nucleo/var/receive_data_createContenedores.php', $validated);
 
             if ($response->successful()) {
                 return response()->json(['message' => 'Contenedor creado y datos enviados'], 201);
