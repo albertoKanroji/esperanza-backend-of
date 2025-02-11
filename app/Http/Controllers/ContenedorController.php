@@ -41,33 +41,19 @@ class ContenedorController extends Controller
                 ], 401);
             }
 
-            // Validar la solicitud
-            $validated = $request->validate([
-                '_pagado' => 'required|string', // Espera 'SI' o 'NO' en el request
-            ]);
+            $_pagado = $request->input('_pagado');
 
             // Convertir $folio a string si es necesario
             $folio = (string) $folio;
 
-            // Asegúrate de buscar exactamente el contenedor por el folio
-            $contenedor = Contenedor::where('folio', '=', $folio)->first(); // Uso de coincidencia exacta
-
-            if (!$contenedor) {
-                return response()->json(['message' => 'Contenedor no encontrado', 'folio' => $folio], 404);
-            }
-
-            // Convertir 'SI' o 'NO' a 1 o 0, según sea necesario
-            $estado = ($validated['_pagado'] === 'SI') ? 1 : 0;
-
-            // Actualizar el campo estado
-            $contenedor->estado = $estado;
-            $contenedor->save();
+            // Preparar datos a enviar a la API en PHP
+            $data = [
+                'folio' => $folio,
+                '_pagado' => $_pagado,
+            ];
 
             // Enviar los datos a otro servidor usando el método centralizado
-            $response = $this->makeHttpRequest('https://esperanza.xromsys.com/nucleo/var/receive_data_update.php', [
-                'folio' => $folio,
-                '_pagado' => $validated['_pagado'],
-            ]);
+            $response = $this->makeHttpRequest('https://esperanza.xromsys.com/nucleo/var/receive_data_update.php', $data);
 
             if ($response->successful()) {
                 return response()->json(['message' => 'Contenedor actualizado y datos enviados'], 200);
@@ -93,38 +79,22 @@ class ContenedorController extends Controller
                 ], 401);
             }
 
-            // Validar la solicitud
-            $validated = $request->validate([
-                'id_salida' => 'required|string',
-                'estado' => 'required|string',
-                'f_salida' => 'required|string',
-            ]);
+            $id_salida = $request->input('id_salida');
+            $estado = $request->input('estado');
+            $f_salida = $request->input('f_salida');
 
             // Convertir $folio a string si es necesario
             $folio = (string) $folio;
 
-            // Asegúrate de buscar exactamente el contenedor por el folio
-            $contenedor = Contenedor::where('folio', $folio)->first(); // Uso de coincidencia exacta
-
-            if (!$contenedor) {
-                return response()->json([
-                    'message' => 'Contenedor no encontrado',
-                    'folio' => $folio
-                ], 404);
-            }
-
-            // Actualizar los campos correspondientes
-            $contenedor->id_salida = $validated['id_salida'];
-            $contenedor->estado = $validated['estado'];
-            $contenedor->save();
+            $data = [
+                'folio' => $folio,
+                'id_salida' => $id_salida,
+                'estado' => $estado,
+                'f_salida' => $f_salida,
+            ];
 
             // Enviar los datos a otro servidor usando el método centralizado
-            $response = $this->makeHttpRequest('https://esperanza.xromsys.com/nucleo/var/receive_data_updateAddContenedor.php', [
-                'folio' => $folio,
-                'id_salida' => $validated['id_salida'],
-                'estado' => $validated['estado'],
-                'f_salida' => $validated['f_salida'],
-            ]);
+            $response = $this->makeHttpRequest('https://esperanza.xromsys.com/nucleo/var/receive_data_updateAddContenedor.php', $data);
 
             if ($response->successful()) {
                 return response()->json(['message' => 'Contenedor actualizado y datos enviados'], 200);
@@ -205,33 +175,19 @@ class ContenedorController extends Controller
                 ], 401);
             }
 
-            // Validar la solicitud
-            $validated = $request->validate([
-                '_pagado' => 'required|string', // Espera 'SI' o 'NO' en el request
-            ]);
+            $_pagado = $request->input('_pagado');
 
             // Convertir $folio a string si es necesario
             $folio = (string) $folio;
 
-            // Buscar el contenedor por id_ingreso o el campo que corresponda
-            $contenedor = Contenedor::where('id_ingreso', $folio)->first(); // Asegúrate de que 'id_ingreso' es el campo correcto
-
-            if (!$contenedor) {
-                return response()->json(['message' => 'Contenedor no encontrado', 'folio' => $folio], 404);
-            }
-
-            // Convertir 'SI' o 'NO' a 1 o 0
-            $estado = ($validated['_pagado'] === 'SI') ? 1 : 0;
-
-            // Actualizar el campo _pagado
-            $contenedor->_pagado = $estado; // Asegúrate de actualizar el campo correcto
-            $contenedor->save();
+            // Preparar datos a enviar a la API en PHP
+            $data = [
+                'folio' => $folio,
+                '_pagado' => $_pagado,
+            ];
 
             // Enviar los datos a otro servidor usando el método centralizado
-            $response = $this->makeHttpRequest('https://esperanza.xromsys.com/nucleo/var/receive_data_updateEntradasPagar.php', [
-                'folio' => $folio,
-                '_pagado' => $validated['_pagado'],
-            ]);
+            $response = $this->makeHttpRequest('https://esperanza.xromsys.com/nucleo/var/receive_data_updateEntradasPagar.php', $data);
 
             if ($response->successful()) {
                 return response()->json(['message' => 'Contenedor actualizado y datos enviados'], 200);
@@ -256,30 +212,16 @@ class ContenedorController extends Controller
                     'message' => 'You must be authenticated to view this resource.'
                 ], 401);
             }
+            
+            $status = $request->input('status');
 
-            // Validar la solicitud
-            $validated = $request->validate([
-                'status' => 'required|string',
-                // Agrega otras validaciones si es necesario
-            ]);
-
-            // Buscar el contenedor por la clave primaria
-            $contenedor = Contenedor::find($folio);
-
-            // Verificar si el contenedor existe
-            if (!$contenedor) {
-                return response()->json(['message' => 'Contenedor no encontrado'], 404);
-            }
-
-            // Actualizar el campo status
-            $contenedor->status = $validated['status'];
+            $data = [
+                'folio' => $folio,
+                'status' => $status,
+            ];
 
             // Enviar los datos a otro servidor usando el método centralizado
-            $response = $this->makeHttpRequest('https://esperanza.xromsys.com/nucleo/var/receive_data_updateContenedorStatus.php', [
-                'folio' => $folio,
-                'status' => $validated['status'],
-                // Agrega otros campos si es necesario
-            ]);
+            $response = $this->makeHttpRequest('https://esperanza.xromsys.com/nucleo/var/receive_data_updateContenedorStatus.php', $data);
 
             if ($response->successful()) {
                 return response()->json(['message' => 'Contenedor actualizado y datos enviados'], 200);
