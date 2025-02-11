@@ -154,9 +154,9 @@ class ContenedorController extends Controller
             }
     
             // Validar la solicitud
-            $validated = $request->validate([
+            $validated = [
                 'estado' => 'required|string',
-            ]);
+            ];
     
             // Convertir folio a entero (porque la API PHP lo requiere así)
             $folio = filter_var($folio, FILTER_VALIDATE_INT);
@@ -164,20 +164,6 @@ class ContenedorController extends Controller
             if (!$folio) {
                 return response()->json(['message' => 'Folio inválido'], 400);
             }
-    
-            // Buscar exactamente el contenedor por el folio
-            $contenedor = EntradaContenedoresS::where('folio', $folio)->first();
-    
-            if (!$contenedor) {
-                return response()->json([
-                    'message' => 'Contenedor no encontrado',
-                    'folio' => $folio
-                ], 404);
-            }
-    
-            // Actualizar el campo estado
-            $contenedor->estado = $validated['estado'];
-            $contenedor->save();
     
             // Preparar datos a enviar
             $data = [
