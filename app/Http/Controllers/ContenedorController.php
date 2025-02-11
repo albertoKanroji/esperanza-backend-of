@@ -153,11 +153,6 @@ class ContenedorController extends Controller
                 ], 401);
             }
     
-            // Validar la solicitud
-            $validated = [
-                'estado' => 'required|string',
-            ];
-    
             // Convertir folio a entero (porque la API PHP lo requiere así)
             $folio = filter_var($folio, FILTER_VALIDATE_INT);
     
@@ -165,10 +160,13 @@ class ContenedorController extends Controller
                 return response()->json(['message' => 'Folio inválido'], 400);
             }
     
-            // Preparar datos a enviar
+            // Tomar el estado directamente del request sin validación
+            $estado = $request->input('estado');
+    
+            // Preparar datos a enviar a la API en PHP
             $data = [
-                'folio' => $folio, // Ahora es un entero
-                'estado' => $validated['estado'],
+                'folio' => $folio,
+                'estado' => $estado,
             ];
     
             // Enviar los datos usando la función centralizada
@@ -177,6 +175,7 @@ class ContenedorController extends Controller
                 $data
             );
     
+            // Manejar la respuesta de la API externa
             if ($response->successful()) {
                 return response()->json(['message' => 'Contenedor actualizado y datos enviados'], 200);
             } else {
@@ -187,8 +186,6 @@ class ContenedorController extends Controller
                 ], $response->status());
             }
     
-        } catch (ValidationException $e) {
-            return response()->json(['message' => 'Error de validación', 'errors' => $e->errors()], 422);
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Error interno del servidor',
