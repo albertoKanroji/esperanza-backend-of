@@ -142,11 +142,6 @@ class ContenedorController extends Controller
         }
     }
 
-    use Illuminate\Support\Facades\Http;
-    use Illuminate\Support\Facades\Auth;
-    use Illuminate\Http\Request;
-    use App\Models\EntradaContenedoresS;
-    
     public function CerrarSalida(Request $request, $folio)
     {
         try {
@@ -215,15 +210,6 @@ class ContenedorController extends Controller
             ], 500);
         }
     }
-    
-    // Función centralizada para hacer solicitudes HTTP
-    private function makeHttpRequest($url, $data)
-    {
-        return Http::withOptions(['verify' => false])
-            ->withHeaders(['Content-Type' => 'application/json'])
-            ->put($url, $data);
-    }
-    
 
     public function updateEntradasPagar(Request $request, $folio)
     {
