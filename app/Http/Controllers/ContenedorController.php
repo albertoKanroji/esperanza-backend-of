@@ -25,7 +25,9 @@ class ContenedorController extends Controller
      */
     private function makeHttpRequest($url, $data)
     {
-        return Http::withOptions(['verify' => false])->post($url, $data);
+        return Http::withOptions(['verify' => false])
+            ->withHeaders(['Content-Type' => 'application/json'])
+            ->put($url, $data);
     }
 
     public function update(Request $request, $folio)
@@ -140,67 +142,88 @@ class ContenedorController extends Controller
         }
     }
 
-public function CerrarSalida(Request $request, $folio)
-{
-    try {
-        // Verificar si el usuario está autenticado
-        if (!Auth::check()) {
+    use Illuminate\Support\Facades\Http;
+    use Illuminate\Support\Facades\Auth;
+    use Illuminate\Http\Request;
+    use App\Models\EntradaContenedoresS;
+    
+    public function CerrarSalida(Request $request, $folio)
+    {
+        try {
+            // Verificar si el usuario está autenticado
+            if (!Auth::check()) {
+                return response()->json([
+                    'error' => 'Unauthorized',
+                    'message' => 'You must be authenticated to view this resource.'
+                ], 401);
+            }
+    
+            // Validar la solicitud
+            $validated = $request->validate([
+                'estado' => 'required|string',
+            ]);
+    
+            // Convertir folio a entero (porque la API PHP lo requiere así)
+            $folio = filter_var($folio, FILTER_VALIDATE_INT);
+    
+            if (!$folio) {
+                return response()->json(['message' => 'Folio inválido'], 400);
+            }
+    
+            // Buscar exactamente el contenedor por el folio
+            $contenedor = EntradaContenedoresS::where('folio', $folio)->first();
+    
+            if (!$contenedor) {
+                return response()->json([
+                    'message' => 'Contenedor no encontrado',
+                    'folio' => $folio
+                ], 404);
+            }
+    
+            // Actualizar el campo estado
+            $contenedor->estado = $validated['estado'];
+            $contenedor->save();
+    
+            // Preparar datos a enviar
+            $data = [
+                'folio' => $folio, // Ahora es un entero
+                'estado' => $validated['estado'],
+            ];
+    
+            // Enviar los datos usando la función centralizada
+            $response = $this->makeHttpRequest(
+                'https://esperanza.xromsys.com/nucleo/var/receive_data_updateCerrarSalida.php',
+                $data
+            );
+    
+            if ($response->successful()) {
+                return response()->json(['message' => 'Contenedor actualizado y datos enviados'], 200);
+            } else {
+                return response()->json([
+                    'message' => 'Contenedor actualizado, pero error al enviar datos',
+                    'response_body' => $response->body(),
+                    'status_code' => $response->status()
+                ], $response->status());
+            }
+    
+        } catch (ValidationException $e) {
+            return response()->json(['message' => 'Error de validación', 'errors' => $e->errors()], 422);
+        } catch (\Exception $e) {
             return response()->json([
-                'error' => 'Unauthorized',
-                'message' => 'You must be authenticated to view this resource.'
-            ], 401);
+                'message' => 'Error interno del servidor',
+                'error' => $e->getMessage()
+            ], 500);
         }
-
-        // Validar la solicitud
-        $validated = $request->validate([
-            'estado' => 'required|string',
-        ]);
-
-        // Convertir $folio a string si es necesario
-        $folio = (string) $folio;
-
-        // Buscar exactamente el contenedor por el folio
-        $contenedor = EntradaContenedoresS::where('folio', $folio)->first();
-
-        if (!$contenedor) {
-            return response()->json([
-                'message' => 'Contenedor no encontrado',
-                'folio' => $folio
-            ], 404);
-        }
-
-        // Actualizar el campo estado
-        $contenedor->estado = $validated['estado'];
-        $contenedor->save();
-
-        // Preparar datos a enviar
-        $data = [
-            'folio' => $folio,
-            'estado' => $validated['estado'],
-        ];
-
-        // Enviar los datos usando la función centralizada
-        $response = $this->makeHttpRequest('https://esperanza.xromsys.com/nucleo/var/receive_data_updateCerrarSalida.php', $data);
-
-        if ($response->successful()) {
-            return response()->json(['message' => 'Contenedor actualizado y datos enviados'], 200);
-        } else {
-            return response()->json([
-                'message' => 'Contenedor actualizado, pero error al enviar datos',
-                'response_body' => $response->body(),
-                'status_code' => $response->status()
-            ], $response->status());
-        }
-
-    } catch (ValidationException $e) {
-        return response()->json(['message' => 'Error de validación', 'errors' => $e->errors()], 422);
-    } catch (\Exception $e) {
-        return response()->json([
-            'message' => 'Error interno del servidor',
-            'error' => $e->getMessage()
-        ], 500);
     }
-}
+    
+    // Función centralizada para hacer solicitudes HTTP
+    private function makeHttpRequest($url, $data)
+    {
+        return Http::withOptions(['verify' => false])
+            ->withHeaders(['Content-Type' => 'application/json'])
+            ->put($url, $data);
+    }
+    
 
     public function updateEntradasPagar(Request $request, $folio)
     {
