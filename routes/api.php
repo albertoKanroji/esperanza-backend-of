@@ -92,6 +92,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/{id}', [UsersController::class, 'show']);
         Route::get('{user}/chats', [ChatController::class, 'getUserChats']);
         Route::post('/createEntradaContenedores', [ContenedorController::class, 'createEntradaContenedoresS']);
+        Route::post('/createSalidaContenedores', [ContenedorController::class, 'createEntradaContenedoresSS']);
+        Route::post('/createTraspaleoContenedores', [ContenedorController::class, 'createEntradaContenedoresSSS']);
+
         Route::post('/createContenedores', [ContenedorController::class, 'createContenedoresS']);
 
         route::get('/info/{id}', [UsersController::class, 'getInfoUser']);
