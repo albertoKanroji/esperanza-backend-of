@@ -247,6 +247,8 @@ class ContenedorController extends Controller
                 'id_transportista' => 'required|integer',
                 'placas'        => 'required|string',
                 'eco'           => 'required|string',
+                'deuda_entrada' => 'required|string',
+                'rfc' => 'required|string',
                 'licencia'      => 'required|string',
                 'operador'      => 'required|string',
                 'observaciones' => 'required|string',
