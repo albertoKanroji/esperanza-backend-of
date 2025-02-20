@@ -51,6 +51,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('porRfc/{rfc}', [UsersController::class, 'porRfc']);
         Route::get('obtenerContenedores/{rfc}', [UsersController::class, 'obtenerContenedores']);
 
+        Route::get('obtenerContenedoresPagar/{rfc}', [UsersController::class, 'obtenerContenedoresPagar']);
+
+
         Route::get('obtenerEntradas/{rfc}', [UsersController::class, 'obtenerEntradas']);
         Route::get('obtenerContenedoresPorEntrada/{rfc}', [UsersController::class, 'obtenerContenedoresPorEntrada']);
 
